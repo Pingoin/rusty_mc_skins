@@ -10,6 +10,11 @@ dioxus = { version = "0.6.0" }
 axum = { version = "0.7.9"}
 tokio = { version = "1"}
 serde = { version = "1.0.228" }
+anyhow = "1.0.100"
+sqlx = { version = "=0.8.6", features = ["sqlite","runtime-tokio"] }
+uuid = { version = "1.4.3", features = ["serde", "v4"] }
+base64 = "0.22.1"
+tower-http = { version = "0.5", features = ["cors"] }
 
 # workspace
 ui = { path = "ui" }

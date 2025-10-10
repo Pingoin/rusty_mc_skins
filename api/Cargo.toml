@@ -8,8 +8,13 @@ dioxus = { workspace = true, features = ["fullstack"] }
 tokio = { workspace = true, features = ["full"],optional = true }
 axum = { workspace = true ,optional = true}
 serde = { workspace = true, features = ["derive"] }
+anyhow = { workspace = true }
+sqlx = {workspace = true ,optional = true, features = ["sqlite","runtime-tokio"] }
+uuid = { workspace = true ,optional = true, features = ["serde", "v4"] }
+base64 = { workspace = true }
+tower-http = { workspace = true ,optional = true, features = ["cors"] }
 
 [features]
 default = []
-server = ["dioxus/server", "dep:axum", "dep:tokio"]
+server = ["dioxus/server", "dep:axum", "dep:tokio","dep:sqlx", "dep:uuid", "dep:tower-http"]
 web = ["dioxus/fullstack"]
