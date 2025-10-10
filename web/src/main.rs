@@ -19,7 +19,15 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.scss");
 
 fn main() {
+    #[cfg(feature = "web")]
+    // Hydrate the application on the client
     dioxus::launch(App);
+
+    // Launch axum on the server
+    #[cfg(feature = "server")]
+    {
+        api::init(App);
+    }  
 }
 
 #[component]

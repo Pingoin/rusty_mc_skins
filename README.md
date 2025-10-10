@@ -6,14 +6,8 @@ Your new workspace contains a member crate for each of the web, desktop and mobi
 your_project/
 ├─ web/
 │  ├─ ... # Web specific UI/logic
-├─ desktop/
-│  ├─ ... # Desktop specific UI/logic
-├─ mobile/
-│  ├─ ... # Mobile specific UI/logic
 ├─ api/
 │  ├─ ... # All shared server logic
-├─ ui/
-│  ├─ ... # Component shared between multiple platforms
 ```
 
 ## Platform crates

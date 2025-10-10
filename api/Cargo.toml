@@ -5,3 +5,11 @@ edition = "2021"
 
 [dependencies]
 dioxus = { workspace = true, features = ["fullstack"] }
+tokio = { workspace = true, features = ["full"],optional = true }
+axum = { workspace = true ,optional = true}
+serde = { workspace = true, features = ["derive"] }
+
+[features]
+default = []
+server = ["dioxus/server", "dep:axum", "dep:tokio"]
+web = ["dioxus/fullstack"]
