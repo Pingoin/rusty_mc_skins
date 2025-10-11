@@ -43,6 +43,17 @@ pub enum SkinType {
     Elytra,
 }
 
+impl From<String> for SkinType {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "Skin"=>Self::Skin,
+            "Cape"=>Self::Cape,
+            "Elytra"=>Self::Elytra,
+            _ => Self::Skin
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Clone, Serialize, Default)]
 pub struct Texture {
     pub id: String,
@@ -127,3 +138,18 @@ pub async fn get_textures() -> Result<Vec<Texture>, ServerFnError> {
     Ok(textures)
 }
 
+#[server(GetTextureById)]
+pub async fn get_texture_by_id(id:String) -> Result<Texture, ServerFnError> {
+    // Optionally, retrieve user data from the database
+    let database = db::get_db().await;
+    let textures = database.get_texture_by_id(id).await?;
+    Ok(textures)
+}
+
+#[server(DelTextureById)]
+pub async fn del_texture_by_id(tex:Texture) -> Result<(), ServerFnError> {
+    // Optionally, retrieve user data from the database
+    let database = db::get_db().await;
+    database.del_texture_by_id(tex.id).await?;
+    Ok(())
+}

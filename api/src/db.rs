@@ -112,4 +112,17 @@ impl Db {
 
         Ok(users)
     }
+
+    pub async fn get_texture_by_id(&self, id: String) -> Result<Texture, AppError> {
+        let account = sqlx::query_as!(Texture, "select * from textures where id = ?", id)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(account)
+    }
+
+    pub async fn del_texture_by_id(&self, id: String) -> Result<(), AppError> {
+        sqlx::query!("delete from textures where id = ?", id).execute(&self.pool)
+            .await?;
+        Ok(())
+    }
 }

@@ -1,4 +1,4 @@
-use api::{Blob, SkinType, Texture};
+use api::{get_texture_by_id, Blob, SkinType, Texture};
 use dioxus::prelude::*;
 
 use crate::views::Route;
@@ -6,6 +6,16 @@ use crate::views::Route;
 #[component]
 pub fn EditTexture(id: String) -> Element {
     let mut texture = use_signal(|| Texture::default());
+
+    let tex_id=texture.read().clone().id;
+
+    if !(id.len() == 0 || id == "new".to_string()|| tex_id==id) {
+        spawn(async move {
+            let t = get_texture_by_id(id).await.unwrap_or_default();
+            texture.set(t);
+        });
+    }
+
     rsx! {
         article {
             h1 { "Texture" }
@@ -67,6 +77,18 @@ pub fn EditTexture(id: String) -> Element {
 
                 },
                 "Save"
+            }
+            button {  
+                onclick: move|_|{
+                    async move {
+                        let nav = navigator();
+                    let t = texture.read().clone();
+                    api::del_texture_by_id(t).await.unwrap();
+                    nav.push(Route::TextureList{});
+
+                }
+                },
+                "delete"
             }
         }
     }
