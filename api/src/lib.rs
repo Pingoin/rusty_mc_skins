@@ -31,19 +31,19 @@ pub struct User {
     pub id: String,
     pub username: String,
     pub password_hash: String,
-    pub avatar_image: Blob,
     pub selected_skin_id: Option<String>,
     pub selected_cape_id: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize)]
+#[derive(Debug, Deserialize, Clone, Default, Serialize)]
 pub enum SkinType {
+    #[default]
     Skin,
     Cape,
     Elytra,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize)]
+#[derive(Debug, Deserialize, Clone, Serialize, Default)]
 pub struct Texture {
     pub id: String,
     pub skin_name: String,
@@ -54,8 +54,15 @@ pub struct Texture {
 use serde::de::Error as DeError;
 use serde::{Deserializer, Serializer};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Blob(pub Vec<u8>);
+
+impl Blob {
+    pub fn as_base64(&self) -> String {
+        BASE64_STANDARD.encode(&self.0)
+    }
+    
+}
 
 impl Serialize for Blob {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -104,11 +111,11 @@ async fn get_users() -> Result<Vec<User>, ServerFnError> {
 }
 
 #[server(CreateTexture)]
-async fn create_texture(textrure: Texture) -> Result<Texture, ServerFnError> {
-    // Optionally, add the texture to the database here
+pub async fn create_texture(
+    texture: Texture,
+) -> Result<Texture, ServerFnError> {
     let database = db::get_db().await;
-    let texture = database.add_texture(textrure).await?;
-
+    let texture = database.add_texture(texture).await?;
     Ok(texture)
 }
 
@@ -119,3 +126,4 @@ pub async fn get_textures() -> Result<Vec<Texture>, ServerFnError> {
     let textures = database.get_textures().await?;
     Ok(textures)
 }
+

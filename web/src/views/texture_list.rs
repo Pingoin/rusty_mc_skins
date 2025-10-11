@@ -10,7 +10,10 @@ pub fn TextureList() -> Element {
             h1 { "Texture List" }
             ul {
                 for texture in textures.cloned().unwrap_or_default(){
-                    li { "{texture.skin_name}" }
+                    li { 
+                        "{texture.skin_name}" 
+                        img { src: "data:image/png;base64,{texture.image_data.as_base64()}",width: "100"}
+                    }
                 }
             }
         }

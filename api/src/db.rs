@@ -1,13 +1,14 @@
-
-use sqlx::{SqlitePool, query};
-use tokio::sync::OnceCell;
-use crate::{Blob, Texture, User};
 use crate::app_error::AppError;
+use crate::{Blob, Texture, User};
+use sqlx::{query, SqlitePool};
+use tokio::sync::OnceCell;
 
 static DATABASE: OnceCell<Db> = OnceCell::const_new();
 
 pub async fn get_db() -> &'static Db {
-    DATABASE.get_or_init(|| async { Db::new().await.unwrap() }).await
+    DATABASE
+        .get_or_init(|| async { Db::new().await.unwrap() })
+        .await
 }
 
 pub struct Db {
@@ -21,30 +22,29 @@ impl Db {
         Ok(Self { pool })
     }
 
-    pub async fn add_user(&self,mut user: User) -> Result<User,AppError> {
-        let id = if  user.id.len()>0 {
+    pub async fn add_user(&self, mut user: User) -> Result<User, AppError> {
+        let id = if user.id.len() > 0 {
             user.id.clone()
         } else {
             uuid::Uuid::new_v4().to_string()
         };
         let username = user.username.clone();
         let password_hash = user.password_hash.clone();
-        let avatar = user.avatar_image.clone().0;
+
         query!(
-            "INSERT OR REPLACE INTO users (id, username, password_hash, avatar_image) VALUES (?1, ?2, ?3, ?4)",
+            "INSERT OR REPLACE INTO users (id, username, password_hash) VALUES (?1, ?2, ?3)",
             id,
             username,
             password_hash,
-            avatar 
         )
         .execute(&self.pool)
         .await?;
-        user.id=id;
+        user.id = id;
         Ok(user)
     }
 
-    pub async fn add_texture(&self,mut texture:Texture) -> Result<Texture,AppError> {
-        let id = if texture.id.len()>0 {
+    pub async fn add_texture(&self, mut texture: Texture) -> Result<Texture, AppError> {
+        let id = if texture.id.len() > 0 {
             texture.id.clone()
         } else {
             uuid::Uuid::new_v4().to_string()
@@ -61,7 +61,7 @@ impl Db {
             id,
             name,
             texture_type,
-            image_data.0
+            image_data.0,
         )
         .execute(&self.pool)
         .await?;
@@ -69,12 +69,10 @@ impl Db {
         Ok(texture)
     }
 
-    pub async fn get_textures(&self) -> Result<Vec<Texture>,AppError> {
-        let rows = query!(
-            "SELECT id, skin_name, texture_type, image_data FROM textures"
-        )
-        .fetch_all(&self.pool)
-        .await?;
+    pub async fn get_textures(&self) -> Result<Vec<Texture>, AppError> {
+        let rows = query!("SELECT id, skin_name, texture_type, image_data FROM textures")
+            .fetch_all(&self.pool)
+            .await?;
 
         let textures = rows
             .into_iter()
@@ -96,7 +94,7 @@ impl Db {
 
     pub async fn get_users(&self) -> Result<Vec<User>, AppError> {
         let rows = query!(
-            "SELECT id, username, password_hash, avatar_image, selected_skin_id, selected_cape_id FROM users"
+            "SELECT id, username, password_hash, selected_skin_id, selected_cape_id FROM users"
         )
         .fetch_all(&self.pool)
         .await?;
@@ -107,12 +105,11 @@ impl Db {
                 id: row.id,
                 username: row.username,
                 password_hash: row.password_hash,
-                avatar_image: Blob(row.avatar_image.unwrap_or_default()),
                 selected_skin_id: row.selected_skin_id,
                 selected_cape_id: row.selected_cape_id,
             })
             .collect();
 
         Ok(users)
-    } 
+    }
 }

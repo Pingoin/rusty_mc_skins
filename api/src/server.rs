@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 
+
 pub async fn init(component: fn() -> Element) -> Result<(), anyhow::Error> {
     use std::net::{IpAddr, Ipv4Addr, SocketAddr};
     // Get the address the server should run on. If the CLI is running, the CLI proxies fullstack into the main address
