@@ -28,7 +28,7 @@ pub fn init(component: fn() -> Element) {
 
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct User {
-    pub id: Option<String>,
+    pub id: String,
     pub username: String,
     pub password_hash: String,
     pub avatar_image: Blob,
@@ -45,7 +45,7 @@ pub enum SkinType {
 
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Texture {
-    pub id: Option<String>,
+    pub id: String,
     pub skin_name: String,
     pub texture_type: SkinType,
     pub image_data: Blob,
@@ -113,7 +113,7 @@ async fn create_texture(textrure: Texture) -> Result<Texture, ServerFnError> {
 }
 
 #[server(GetTextures)]
-async fn get_textures() -> Result<Vec<Texture>, ServerFnError> {
+pub async fn get_textures() -> Result<Vec<Texture>, ServerFnError> {
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
     let textures = database.get_textures().await?;

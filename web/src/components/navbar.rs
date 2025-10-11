@@ -9,7 +9,10 @@ pub fn Navbar(children: Element) -> Element {
 
         nav {
             id: "navbar",
-            {children}
+            ul{
+                {children}
+            }
+            
         }
     }
 }

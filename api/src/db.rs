@@ -22,8 +22,8 @@ impl Db {
     }
 
     pub async fn add_user(&self,mut user: User) -> Result<User,AppError> {
-        let id = if let Some(id) = user.id.clone() {
-            id
+        let id = if  user.id.len()>0 {
+            user.id.clone()
         } else {
             uuid::Uuid::new_v4().to_string()
         };
@@ -39,13 +39,13 @@ impl Db {
         )
         .execute(&self.pool)
         .await?;
-        user.id=Some(id);
+        user.id=id;
         Ok(user)
     }
 
     pub async fn add_texture(&self,mut texture:Texture) -> Result<Texture,AppError> {
-        let id = if let Some(id) = texture.id.clone() {
-            id
+        let id = if texture.id.len()>0 {
+            texture.id.clone()
         } else {
             uuid::Uuid::new_v4().to_string()
         };
@@ -65,7 +65,7 @@ impl Db {
         )
         .execute(&self.pool)
         .await?;
-        texture.id=Some(id);
+        texture.id = id;
         Ok(texture)
     }
 
@@ -79,7 +79,7 @@ impl Db {
         let textures = rows
             .into_iter()
             .map(|row| Texture {
-                id: Some(row.id),
+                id: row.id,
                 skin_name: row.skin_name,
                 texture_type: match row.texture_type.as_str() {
                     "Skin" => crate::SkinType::Skin,
@@ -104,7 +104,7 @@ impl Db {
         let users = rows
             .into_iter()
             .map(|row| User {
-                id: Some(row.id),
+                id: row.id,
                 username: row.username,
                 password_hash: row.password_hash,
                 avatar_image: Blob(row.avatar_image.unwrap_or_default()),

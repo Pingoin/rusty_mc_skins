@@ -1,19 +1,11 @@
 use dioxus::prelude::*;
-
 use components::Navbar;
-use views::{ Home};
+use crate::views::{NavItems, Route};
 
 mod views;
 mod components;
 
 
-#[derive(Debug, Clone, Routable, PartialEq)]
-#[rustfmt::skip]
-enum Route {
-    #[layout(WebNavbar)]
-    #[route("/")]
-    Home {},
-}
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.scss");
@@ -51,10 +43,7 @@ fn App() -> Element {
 fn WebNavbar() -> Element {
     rsx! {
         Navbar {  
-            Link {
-                to: Route::Home {},
-                "Home"
-            }
+            NavItems {}
         }
         main { Outlet::<Route> {} }
         
