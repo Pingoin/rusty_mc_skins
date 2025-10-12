@@ -4,7 +4,7 @@ use dioxus::prelude::*;
 use crate::views::Route;
 
 #[component]
-pub fn EditTexture(id: String) -> Element {
+pub fn TextureEdit(id: String) -> Element {
     let mut texture = use_signal(|| Texture::default());
 
     let tex_id=texture.read().clone().id;
@@ -63,7 +63,7 @@ pub fn EditTexture(id: String) -> Element {
                     }
                 }
             }
-        }
+        }  
         }
             button {
                 onclick: move |_| {

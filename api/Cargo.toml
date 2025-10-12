@@ -13,8 +13,10 @@ sqlx = {workspace = true ,optional = true, features = ["sqlite","runtime-tokio"]
 uuid = { workspace = true ,optional = true, features = ["serde", "v4"] }
 base64 = { workspace = true }
 tower-http = { workspace = true ,optional = true, features = ["cors"] }
+argon2 = { workspace = true ,optional = true}
+rand = { workspace = true ,optional = true}
 
 [features]
 default = []
-server = ["dioxus/server", "dep:axum", "dep:tokio","dep:sqlx", "dep:uuid", "dep:tower-http"]
+server = ["dioxus/server", "dep:axum", "dep:tokio","dep:sqlx", "dep:uuid", "dep:tower-http","dep:argon2","dep:rand"]
 web = ["dioxus/fullstack"]

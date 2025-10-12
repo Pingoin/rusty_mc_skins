@@ -3,12 +3,15 @@ use dioxus::prelude::*;
 use crate::WebNavbar;
 mod home;
 mod texture_list;
-mod edit_texture;
+mod texture_edit;
+mod user_list;
+mod user_edit;
 
 use texture_list::TextureList;
-use edit_texture::EditTexture;
+use texture_edit::TextureEdit;
 use home::Home;
-
+use user_edit::UserEdit;
+use user_list::UserList;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -19,7 +22,11 @@ pub(crate) enum Route {
     #[route("/texture/list")]
     TextureList {},
     #[route("/texture/:id/edit")]
-    EditTexture { id: String },
+    TextureEdit { id: String },
+    #[route("/user/list")]
+    UserList {},
+    #[route("/user/:id/edit")]
+    UserEdit { id: String },
 }
 
 #[component]
@@ -34,8 +41,16 @@ pub fn NavItems() -> Element {
             "Textures"
         }}
         li { Link {
-            to: Route::EditTexture { id: "new".to_string() },
+            to: Route::TextureEdit { id: "new".to_string() },
             "New Texture"
-        }} 
+        }}
+        li{Link {
+            to: Route::UserList  {},
+            "User"
+        }}
+        li { Link {
+            to: Route::UserEdit { id: "new".to_string() },
+            "New User"
+        }}
     }
 }

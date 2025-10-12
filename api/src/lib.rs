@@ -2,6 +2,14 @@
 use base64::prelude::*;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "server")]
+use argon2::{
+    password_hash::{
+        rand_core::OsRng,
+         PasswordHasher, SaltString
+    },
+    Argon2
+};
 
 #[cfg(feature = "server")]
 mod db;
@@ -26,7 +34,7 @@ pub fn init(component: fn() -> Element) {
         });
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize)]
+#[derive(Debug, Deserialize, Clone,Default, Serialize)]
 pub struct User {
     pub id: String,
     pub username: String,
@@ -46,11 +54,22 @@ pub enum SkinType {
 impl From<String> for SkinType {
     fn from(value: String) -> Self {
         match value.as_str() {
-            "Skin"=>Self::Skin,
-            "Cape"=>Self::Cape,
-            "Elytra"=>Self::Elytra,
-            _ => Self::Skin
+            "Skin" => Self::Skin,
+            "Cape" => Self::Cape,
+            "Elytra" => Self::Elytra,
+            _ => Self::Skin,
         }
+    }
+}
+
+impl Into<String> for SkinType {
+    fn into(self) -> String {
+        match self {
+            SkinType::Skin => "Skin",
+            SkinType::Cape => "Cape",
+            SkinType::Elytra => "Elytra",
+        }
+        .to_string()
     }
 }
 
@@ -72,7 +91,6 @@ impl Blob {
     pub fn as_base64(&self) -> String {
         BASE64_STANDARD.encode(&self.0)
     }
-    
 }
 
 impl Serialize for Blob {
@@ -104,52 +122,21 @@ impl From<Vec<u8>> for Blob {
     }
 }
 
-#[server(CreateUser)]
-async fn create_user(user: User) -> Result<User, ServerFnError> {
-    let database = db::get_db().await;
-    // Optionally, add the user to the database here
-    let user = database.add_user(user).await?;
+mod users;
+pub use users::*;
 
-    Ok(user)
-}
+mod textures;
+pub use textures::*;
 
-#[server(GetUsers)]
-async fn get_users() -> Result<Vec<User>, ServerFnError> {
-    // Optionally, retrieve user data from the database here
-    let database = db::get_db().await;
-    let users = database.get_users().await?;
-    Ok(users)
-}
+#[server]
+pub async fn hash_password(password:String)->Result<String, ServerFnError> {
+let salt = SaltString::generate(&mut OsRng);
 
-#[server(CreateTexture)]
-pub async fn create_texture(
-    texture: Texture,
-) -> Result<Texture, ServerFnError> {
-    let database = db::get_db().await;
-    let texture = database.add_texture(texture).await?;
-    Ok(texture)
-}
+// Argon2 with default params (Argon2id v19)
+let argon2 = Argon2::default();
 
-#[server(GetTextures)]
-pub async fn get_textures() -> Result<Vec<Texture>, ServerFnError> {
-    // Optionally, retrieve user data from the database
-    let database = db::get_db().await;
-    let textures = database.get_textures().await?;
-    Ok(textures)
-}
-
-#[server(GetTextureById)]
-pub async fn get_texture_by_id(id:String) -> Result<Texture, ServerFnError> {
-    // Optionally, retrieve user data from the database
-    let database = db::get_db().await;
-    let textures = database.get_texture_by_id(id).await?;
-    Ok(textures)
-}
-
-#[server(DelTextureById)]
-pub async fn del_texture_by_id(tex:Texture) -> Result<(), ServerFnError> {
-    // Optionally, retrieve user data from the database
-    let database = db::get_db().await;
-    database.del_texture_by_id(tex.id).await?;
-    Ok(())
+// Hash password to PHC string ($argon2id$v=19$...)
+let password_hash = argon2.hash_password(password.as_bytes(), &salt).unwrap().to_string();
+    // Passwort hashen
+    Ok(password_hash)
 }

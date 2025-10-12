@@ -1,7 +1,7 @@
-use crate::app_error::AppError;
-use crate::{Blob, Texture, User};
-use sqlx::{query, SqlitePool};
+use sqlx::SqlitePool;
 use tokio::sync::OnceCell;
+mod user;
+mod textures;
 
 static DATABASE: OnceCell<Db> = OnceCell::const_new();
 
@@ -21,108 +21,6 @@ impl Db {
         sqlx::migrate!("../migrations").run(&pool).await?;
         Ok(Self { pool })
     }
-
-    pub async fn add_user(&self, mut user: User) -> Result<User, AppError> {
-        let id = if user.id.len() > 0 {
-            user.id.clone()
-        } else {
-            uuid::Uuid::new_v4().to_string()
-        };
-        let username = user.username.clone();
-        let password_hash = user.password_hash.clone();
-
-        query!(
-            "INSERT OR REPLACE INTO users (id, username, password_hash) VALUES (?1, ?2, ?3)",
-            id,
-            username,
-            password_hash,
-        )
-        .execute(&self.pool)
-        .await?;
-        user.id = id;
-        Ok(user)
-    }
-
-    pub async fn add_texture(&self, mut texture: Texture) -> Result<Texture, AppError> {
-        let id = if texture.id.len() > 0 {
-            texture.id.clone()
-        } else {
-            uuid::Uuid::new_v4().to_string()
-        };
-        let name = texture.skin_name.clone();
-        let texture_type = match texture.texture_type {
-            crate::SkinType::Skin => "Skin",
-            crate::SkinType::Cape => "Cape",
-            crate::SkinType::Elytra => "Elytra",
-        };
-        let image_data = texture.image_data.clone();
-        query!(
-            "INSERT OR REPLACE INTO textures (id, skin_name, texture_type, image_data) VALUES (?1, ?2, ?3, ?4)",
-            id,
-            name,
-            texture_type,
-            image_data.0,
-        )
-        .execute(&self.pool)
-        .await?;
-        texture.id = id;
-        Ok(texture)
-    }
-
-    pub async fn get_textures(&self) -> Result<Vec<Texture>, AppError> {
-        let rows = query!("SELECT id, skin_name, texture_type, image_data FROM textures")
-            .fetch_all(&self.pool)
-            .await?;
-
-        let textures = rows
-            .into_iter()
-            .map(|row| Texture {
-                id: row.id,
-                skin_name: row.skin_name,
-                texture_type: match row.texture_type.as_str() {
-                    "Skin" => crate::SkinType::Skin,
-                    "Cape" => crate::SkinType::Cape,
-                    "Elytra" => crate::SkinType::Elytra,
-                    _ => crate::SkinType::Skin, // fallback or handle error
-                },
-                image_data: Blob(row.image_data),
-            })
-            .collect();
-
-        Ok(textures)
-    }
-
-    pub async fn get_users(&self) -> Result<Vec<User>, AppError> {
-        let rows = query!(
-            "SELECT id, username, password_hash, selected_skin_id, selected_cape_id FROM users"
-        )
-        .fetch_all(&self.pool)
-        .await?;
-
-        let users = rows
-            .into_iter()
-            .map(|row| User {
-                id: row.id,
-                username: row.username,
-                password_hash: row.password_hash,
-                selected_skin_id: row.selected_skin_id,
-                selected_cape_id: row.selected_cape_id,
-            })
-            .collect();
-
-        Ok(users)
-    }
-
-    pub async fn get_texture_by_id(&self, id: String) -> Result<Texture, AppError> {
-        let account = sqlx::query_as!(Texture, "select * from textures where id = ?", id)
-            .fetch_one(&self.pool)
-            .await?;
-        Ok(account)
-    }
-
-    pub async fn del_texture_by_id(&self, id: String) -> Result<(), AppError> {
-        sqlx::query!("delete from textures where id = ?", id).execute(&self.pool)
-            .await?;
-        Ok(())
-    }
 }
+
+

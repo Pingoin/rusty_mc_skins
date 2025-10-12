@@ -19,7 +19,7 @@ pub fn TextureList() -> Element {
                             onclick:move |_| {
                                 let texture=texture.clone();
                                 let nav = navigator();
-                                nav.push(Route::EditTexture{id:texture.clone().id.clone()});
+                                nav.push(Route::TextureEdit{id:texture.clone().id.clone()});
                             },
                             "edit"
                         }
