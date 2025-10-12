@@ -36,4 +36,3 @@ pub async fn del_user_by_id(tex: User) -> Result<(), ServerFnError> {
     database.del_user_by_id(tex.id).await?;
     Ok(())
 }
-

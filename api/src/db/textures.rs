@@ -5,7 +5,6 @@ use crate::{app_error::AppError, Blob, SkinType, Texture};
 use super::Db;
 
 impl Db {
-
     pub async fn add_texture(&self, mut texture: Texture) -> Result<Texture, AppError> {
         let id = if texture.id.len() > 0 {
             texture.id.clone()
@@ -80,6 +79,4 @@ impl Db {
         .await?;
         Ok(textures)
     }
-
-
 }

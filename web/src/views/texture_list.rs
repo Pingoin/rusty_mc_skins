@@ -7,13 +7,13 @@ use crate::views::Route;
 pub fn TextureList() -> Element {
     let textures = use_resource(|| async move { get_textures().await.unwrap_or_default() });
     rsx! {
-         
+
         article {
             h1 { "Texture List" }
             ul {
                 for texture in textures.cloned().unwrap_or_default(){
-                    li { 
-                        "{texture.skin_name}" 
+                    li {
+                        "{texture.skin_name}"
                         img { src: "data:image/png;base64,{texture.image_data.as_base64()}",width: "100"}
                         button {
                             onclick:move |_| {

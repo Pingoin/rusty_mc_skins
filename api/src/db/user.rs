@@ -1,17 +1,12 @@
-use crate::app_error::AppError;
-use sqlx::{query};
 use crate::User;
+use crate::{app_error::AppError, SkinType};
+use sqlx::query;
 
 use super::Db;
 
 impl Db {
-
     pub async fn get_users(&self) -> Result<Vec<User>, AppError> {
-        let rows = query!(
-            "SELECT id, username, password_hash, selected_skin_id, selected_cape_id FROM users"
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows = query!("SELECT * FROM users").fetch_all(&self.pool).await?;
 
         let users = rows
             .into_iter()
@@ -21,6 +16,7 @@ impl Db {
                 password_hash: row.password_hash,
                 selected_skin_id: row.selected_skin_id,
                 selected_cape_id: row.selected_cape_id,
+                selected_elytra_id: row.selected_elytra_id,
             })
             .collect();
 
@@ -49,12 +45,16 @@ impl Db {
         };
         let username = user.username.clone();
         let password_hash = user.password_hash.clone();
+        let selected_skin_id = user.selected_skin_id.clone();
+        let selected_cape_id = user.selected_cape_id.clone();
 
         query!(
-            "INSERT OR REPLACE INTO users (id, username, password_hash) VALUES (?1, ?2, ?3)",
+            "INSERT OR REPLACE INTO users (id, username, password_hash,selected_skin_id,selected_cape_id) VALUES (?1, ?2, ?3, ?4,?5)",
             id,
             username,
             password_hash,
+            selected_skin_id,
+            selected_cape_id,
         )
         .execute(&self.pool)
         .await?;
@@ -62,4 +62,20 @@ impl Db {
         Ok(user)
     }
 
+    pub async fn get_skin(
+        &self,
+        user_name: String,
+        texture_type: SkinType,
+    ) -> Result<Option<Vec<u8>>, AppError> {
+        let tex: String = texture_type.clone().into();
+
+        let row = match texture_type.clone(){
+                SkinType::Skin =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_skin_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
+            .await?.map(|row| row.image_data),
+                SkinType::Cape => sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_cape_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
+            .await?.map(|row| row.image_data),
+                SkinType::Elytra =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_elytra_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex).fetch_optional(&self.pool).await?.map(|row| row.image_data),
+            };
+        Ok(row)
+    }
 }

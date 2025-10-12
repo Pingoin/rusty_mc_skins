@@ -7,9 +7,9 @@ use crate::views::Route;
 pub fn TextureEdit(id: String) -> Element {
     let mut texture = use_signal(|| Texture::default());
 
-    let tex_id=texture.read().clone().id;
+    let tex_id = texture.read().clone().id;
 
-    if !(id.len() == 0 || id == "new".to_string()|| tex_id==id) {
+    if !(id.len() == 0 || id == "new".to_string() || tex_id == id) {
         spawn(async move {
             let t = get_texture_by_id(id).await.unwrap_or_default();
             texture.set(t);
@@ -63,7 +63,7 @@ pub fn TextureEdit(id: String) -> Element {
                     }
                 }
             }
-        }  
+        }
         }
             button {
                 onclick: move |_| {
@@ -78,7 +78,7 @@ pub fn TextureEdit(id: String) -> Element {
                 },
                 "Save"
             }
-            button {  
+            button {
                 onclick: move|_|{
                     async move {
                         let nav = navigator();

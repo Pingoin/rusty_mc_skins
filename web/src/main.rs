@@ -1,11 +1,9 @@
-use dioxus::prelude::*;
-use components::Navbar;
 use crate::views::{NavItems, Route};
+use components::Navbar;
+use dioxus::prelude::*;
 
-mod views;
 mod components;
-
-
+mod views;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.scss");
@@ -19,7 +17,7 @@ fn main() {
     #[cfg(feature = "server")]
     {
         api::init(App);
-    }  
+    }
 }
 
 #[component]
@@ -42,11 +40,11 @@ fn App() -> Element {
 #[component]
 fn WebNavbar() -> Element {
     rsx! {
-        Navbar {  
+        Navbar {
             NavItems {}
         }
         main { Outlet::<Route> {} }
-        
+
         footer {  }
     }
 }

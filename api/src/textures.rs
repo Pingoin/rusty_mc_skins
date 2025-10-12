@@ -1,8 +1,8 @@
+use super::SkinType;
+use super::Texture;
 #[cfg(feature = "server")]
 use crate::db;
-use super::SkinType;
 use dioxus::prelude::*;
-use super::Texture;
 
 #[server(CreateTexture)]
 pub async fn create_texture(texture: Texture) -> Result<Texture, ServerFnError> {

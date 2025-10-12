@@ -12,7 +12,7 @@ pub fn Navbar(children: Element) -> Element {
             ul{
                 {children}
             }
-            
+
         }
     }
 }

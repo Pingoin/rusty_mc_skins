@@ -2,14 +2,14 @@ use dioxus::prelude::*;
 
 use crate::WebNavbar;
 mod home;
-mod texture_list;
 mod texture_edit;
-mod user_list;
+mod texture_list;
 mod user_edit;
+mod user_list;
 
-use texture_list::TextureList;
-use texture_edit::TextureEdit;
 use home::Home;
+use texture_edit::TextureEdit;
+use texture_list::TextureList;
 use user_edit::UserEdit;
 use user_list::UserList;
 
@@ -32,7 +32,7 @@ pub(crate) enum Route {
 #[component]
 pub fn NavItems() -> Element {
     rsx! {
-        li{Link {   
+        li{Link {
             to: Route::Home {},
             "Home"
         }}
