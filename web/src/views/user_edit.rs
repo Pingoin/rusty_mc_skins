@@ -69,7 +69,7 @@ pub fn UserEdit(id: String) -> Element {
                 },
                 option{value:"None", "None"}
                 for skin in skins.cloned().unwrap_or_default(){
-                    option { value:skin.id, "{skin.skin_name}" }
+                    option { value:skin.clone().id, "{skin.clone().skin_name.clone()}", img { src: "data:image/png;base64,{skin.get_preview().unwrap_or_default().as_base64()}",width: "100" }}
                 }
             }
             select {

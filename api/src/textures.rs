@@ -3,7 +3,7 @@ use std::io::Cursor;
 use base64::prelude::*;
 use dioxus::prelude::*;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::imageops::{overlay, replace};
+use image::imageops::{self, overlay, replace, resize};
 use image::{DynamicImage, GenericImageView, RgbaImage};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -95,6 +95,8 @@ impl Texture {
         )?
         .to_rgba8();
 
+        
+
         let mut buf = Vec::new();
         let mut cursor = Cursor::new(&mut buf);
 
@@ -116,35 +118,58 @@ impl Texture {
             image::ImageFormat::Png,
         )?
         .to_rgba8();
+    
+        let factor=img.width()/64;
+        let ratio=img.width()/img.height();
 
-        let mut output = RgbaImage::new(18, 34);
+        let mut output = RgbaImage::new(18*factor, 34*factor);
+        if ratio == 1{
+
         // Base Skin
-        let head = img.view(8, 8, 8, 8).to_image();
-        let left_leg = img.view(4, 20, 4, 12).to_image();
-        let right_leg = img.view(20, 52, 4, 12).to_image();
-        let left_arm = img.view(44, 20, 4, 12).to_image();
-        let right_arm = img.view(36, 52, 4, 12).to_image();
-        let body = img.view(20, 20, 8, 12).to_image();
-        replace(&mut output, &head, 5, 1);
-        replace(&mut output,&left_leg,5,21);
-        replace(&mut output,&right_leg,9,21);
-        replace(&mut output,&left_arm,1,9);
-        replace(&mut output,&right_arm,13,9);
-        replace(&mut output,&body,5,9);
+        let head = img.view(8 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
+        let left_leg = img.view(4 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
+        let right_leg = img.view(20 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
+        let left_arm = img.view(44 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
+        let right_arm = img.view(36 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
+        let body = img.view(20 * factor, 20 * factor, 8 * factor, 12 * factor).to_image();
+        replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+        replace(&mut output, &left_leg, (4 * factor).into(), (20 * factor).into());
+        replace(&mut output, &right_leg, (8 * factor).into(), (20 * factor).into());
+        replace(&mut output, &left_arm, (0 * factor).into(), (8 * factor).into());
+        replace(&mut output, &right_arm, (12 * factor).into(), (8 * factor).into());
+        replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
 
         // Top layer     
-        let head = img.view(40, 8, 8, 8).to_image();
-        let left_leg = img.view(4, 36, 4, 12).to_image();
-        let right_leg = img.view(4, 52, 4, 12).to_image();
-        let left_arm = img.view(44, 36, 4, 12).to_image();
-        let right_arm = img.view(52, 52, 4, 12).to_image();
-        let body = img.view(20, 36, 8, 12).to_image();
-        overlay(&mut output, &head, 5, 1);
-        overlay(&mut output,&left_leg,5,21);
-        overlay(&mut output,&right_leg,9,21);
-        overlay(&mut output,&left_arm,1,9);
-        overlay(&mut output,&right_arm,13,9);
-        overlay(&mut output,&body,5,9);
+        let head = img.view(40 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
+        let left_leg = img.view(4 * factor, 36 * factor, 4 * factor, 12 * factor).to_image();
+        let right_leg = img.view(4 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
+        let left_arm = img.view(44 * factor, 36 * factor, 4 * factor, 12 * factor).to_image();
+        let right_arm = img.view(52 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
+        let body = img.view(20 * factor, 36 * factor, 8 * factor, 12 * factor).to_image();
+        overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+        overlay(&mut output, &left_leg, (4 * factor).into(), (20 * factor).into());
+        overlay(&mut output, &right_leg, (8 * factor).into(), (20 * factor).into());
+        overlay(&mut output, &left_arm, (0 * factor).into(), (8 * factor).into());
+        overlay(&mut output, &right_arm, (12 * factor).into(), (8 * factor).into());
+        overlay(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+        }else{
+        let head = img.view(8 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
+        let left_leg = img.view(4 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
+        let right_leg = img.view(4 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
+        let left_arm = img.view(44 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
+        let right_arm = img.view(44 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
+        let body = img.view(20 * factor, 20 * factor, 8 * factor, 12 * factor).to_image();
+        replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+        replace(&mut output, &left_leg, (4 * factor).into(), (20 * factor).into());
+        replace(&mut output, &right_leg, (8 * factor).into(), (20 * factor).into());
+        replace(&mut output, &left_arm, (0 * factor).into(), (8 * factor).into());
+        replace(&mut output, &right_arm, (12 * factor).into(), (8 * factor).into());
+        replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+
+        let head = img.view(40 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
+        overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+
+        }
 
         let mut buf = Vec::new();
         let mut cursor = Cursor::new(&mut buf);
