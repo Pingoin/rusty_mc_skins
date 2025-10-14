@@ -24,6 +24,7 @@ pub fn TextureEdit(id: String) -> Element {
                 oninput: move |e| {
                     let mut t = texture.read().clone();
                     t.skin_name = e.value().clone();
+                    t.compress().unwrap();
                     texture.set(t);
                 }
             }
@@ -36,6 +37,7 @@ pub fn TextureEdit(id: String) -> Element {
                         "Elytra" => SkinType::Elytra,
                         _ => SkinType::Skin,
                     };
+
                     texture.set(t);
                 },
                 option { value: "Skin", "Skin" }
@@ -58,13 +60,15 @@ pub fn TextureEdit(id: String) -> Element {
                         let mut t = texture.read().clone();
                         // read the file as bytes
                         let data = file_engine.read_file(file).await.unwrap_or_default();
-                        t.image_data = Blob(data);
+                        t.image_data=Blob(data);
                         texture.set(t);
                     }
                 }
             }
         }
         }
+
+        img { src: "data:image/png;base64,{texture.read().get_preview().unwrap_or_default().as_base64()}",width: "100" }
             button {
                 onclick: move |_| {
                     async move {
@@ -85,8 +89,7 @@ pub fn TextureEdit(id: String) -> Element {
                     let t = texture.read().clone();
                     api::del_texture_by_id(t).await.unwrap();
                     nav.push(Route::TextureList{});
-
-                }
+                    }
                 },
                 "delete"
             }

@@ -4,7 +4,7 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
-use base64::prelude::*;
+
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -41,84 +41,6 @@ pub struct User {
     pub selected_elytra_id: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Clone, Default, Serialize)]
-pub enum SkinType {
-    #[default]
-    Skin,
-    Cape,
-    Elytra,
-}
-
-impl From<String> for SkinType {
-    fn from(value: String) -> Self {
-        match value.as_str() {
-            "Skin" => Self::Skin,
-            "Cape" => Self::Cape,
-            "Elytra" => Self::Elytra,
-            _ => Self::Skin,
-        }
-    }
-}
-
-impl Into<String> for SkinType {
-    fn into(self) -> String {
-        match self {
-            SkinType::Skin => "Skin",
-            SkinType::Cape => "Cape",
-            SkinType::Elytra => "Elytra",
-        }
-        .to_string()
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Serialize, Default)]
-pub struct Texture {
-    pub id: String,
-    pub skin_name: String,
-    pub texture_type: SkinType,
-    pub image_data: Blob,
-}
-
-use serde::de::Error as DeError;
-use serde::{Deserializer, Serializer};
-
-#[derive(Debug, Clone, Default)]
-pub struct Blob(pub Vec<u8>);
-
-impl Blob {
-    pub fn as_base64(&self) -> String {
-        BASE64_STANDARD.encode(&self.0)
-    }
-}
-
-impl Serialize for Blob {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let encoded = BASE64_STANDARD.encode(&self.0);
-        serializer.serialize_str(&encoded)
-    }
-}
-
-impl<'de> Deserialize<'de> for Blob {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        let decoded = BASE64_STANDARD
-            .decode(&s)
-            .map_err(|e| D::Error::custom(e.to_string()))?;
-        Ok(Blob(decoded))
-    }
-}
-
-impl From<Vec<u8>> for Blob {
-    fn from(vec: Vec<u8>) -> Self {
-        Blob(vec)
-    }
-}
 
 mod users;
 pub use users::*;
