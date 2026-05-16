@@ -26,7 +26,7 @@ pub fn TextureEdit(id: String) -> Element {
                     t.skin_name = e.value().clone();
                     t.compress().unwrap();
                     texture.set(t);
-                }
+                },
             }
             select {
                 onchange: move |e| {
@@ -37,58 +37,57 @@ pub fn TextureEdit(id: String) -> Element {
                         "Elytra" => SkinType::Elytra,
                         _ => SkinType::Skin,
                     };
-
                     texture.set(t);
                 },
                 option { value: "Skin", "Skin" }
                 option { value: "Cape", "Cape" }
                 option { value: "Elytra", "Elytra" }
             }
-             input {
-            // tell the input to pick a file
-            r#type: "file",
-            // list the accepted extensions
-            accept: ".png",
-            // pick multiple files
-            multiple: false,
-            onchange:move |evt| {
-                async move {
-                if let Some(file_engine) = &evt.files() {
-                    let files = file_engine.files();
-                    if files.len() > 0 {
-                        let file = &files[0];
-                        let mut t = texture.read().clone();
-                        // read the file as bytes
-                        let data = file_engine.read_file(file).await.unwrap_or_default();
-                        t.image_data=Blob(data);
-                        texture.set(t);
+            input {
+                // tell the input to pick a file
+                r#type: "file",
+                // list the accepted extensions
+                accept: ".png",
+                // pick multiple files
+                multiple: false,
+                onchange: move |evt| {
+                    async move {
+                        if let Some(file_engine) = &evt.files() {
+                            let files = file_engine.files();
+                            if files.len() > 0 {
+                                let file = &files[0];
+                                let mut t = texture.read().clone();
+                                let data = file_engine.read_file(file).await.unwrap_or_default();
+                                t.image_data = Blob(data);
+                                texture.set(t);
+                            }
+                        }
                     }
-                }
+                },
             }
-        }
-        }
 
-        img { src: "data:image/png;base64,{texture.read().get_preview().unwrap_or_default().as_base64()}",width: "100" }
+            img {
+                src: "data:image/png;base64,{texture.read().get_preview().unwrap_or_default().as_base64()}",
+                width: "100",
+            }
             button {
                 onclick: move |_| {
                     async move {
                         let nav = navigator();
-                    let t = texture.read().clone();
-                    api::create_texture(t).await.unwrap();
-                    nav.push(Route::TextureList{});
-
-                }
-
+                        let t = texture.read().clone();
+                        api::create_texture(t).await.unwrap();
+                        nav.push(Route::TextureList {});
+                    }
                 },
                 "Save"
             }
             button {
-                onclick: move|_|{
+                onclick: move |_| {
                     async move {
                         let nav = navigator();
-                    let t = texture.read().clone();
-                    api::del_texture_by_id(t).await.unwrap();
-                    nav.push(Route::TextureList{});
+                        let t = texture.read().clone();
+                        api::del_texture_by_id(t).await.unwrap();
+                        nav.push(Route::TextureList {});
                     }
                 },
                 "delete"

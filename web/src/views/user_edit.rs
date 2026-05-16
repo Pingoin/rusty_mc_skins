@@ -41,66 +41,71 @@ pub fn UserEdit(id: String) -> Element {
                     let mut t = user.read().clone();
                     t.username = e.value().clone();
                     user.set(t);
-                }
+                },
             }
             input {
-                value:"password",
+                value: "password",
                 oninput: move |e| {
                     let mut t = user.read().clone();
-                    async move{
-                        let pwh=api::hash_password(e.value().clone()).await.unwrap_or_default();
+                    async move {
+                        let pwh = api::hash_password(e.value().clone()).await.unwrap_or_default();
                         t.password_hash = pwh;
                         user.set(t);
                     }
-
+                },
+            }
+            select {
+                onchange: move |e| {
+                    let mut t = user.read().clone();
+                    let mut id: Option<String> = Some(e.value().clone());
+                    if id == Some("None".to_string()) {
+                        id = None;
+                    }
+                    t.selected_skin_id = id;
+                    user.set(t);
+                    async {
+                        api::hash_password("heinz".to_string()).await.unwrap_or_default();
+                    }
+                },
+                option { value: "None", "None" }
+                for skin in skins.cloned().unwrap_or_default() {
+                    option { value: skin.clone().id,
+                        "{skin.clone().skin_name.clone()}"
+                        img {
+                            src: "data:image/png;base64,{skin.get_preview().unwrap_or_default().as_base64()}",
+                            width: "100",
+                        }
+                    }
                 }
             }
             select {
-                onchange: move |e|{
+                onchange: move |e| {
                     let mut t = user.read().clone();
-                    let mut id:Option<String>=Some(e.value().clone());
-                    if id==Some("None".to_string()){
-                        id=None;
+                    let mut id: Option<String> = Some(e.value().clone());
+                    if id == Some("None".to_string()) {
+                        id = None;
                     }
-                    t.selected_skin_id=id;
+                    t.selected_cape_id = id;
                     user.set(t);
-                    async{api::hash_password("heinz".to_string()).await.unwrap_or_default();}
-
                 },
-                option{value:"None", "None"}
-                for skin in skins.cloned().unwrap_or_default(){
-                    option { value:skin.clone().id, "{skin.clone().skin_name.clone()}", img { src: "data:image/png;base64,{skin.get_preview().unwrap_or_default().as_base64()}",width: "100" }}
+                option { value: "None", "None" }
+                for cape in capes.cloned().unwrap_or_default() {
+                    option { value: cape.id, "{cape.skin_name}" }
                 }
             }
             select {
-                onchange: move |e|{
+                onchange: move |e| {
                     let mut t = user.read().clone();
-                    let mut id:Option<String>=Some(e.value().clone());
-                    if id==Some("None".to_string()){
-                        id=None;
+                    let mut id: Option<String> = Some(e.value().clone());
+                    if id == Some("None".to_string()) {
+                        id = None;
                     }
-                    t.selected_cape_id=id;
+                    t.selected_elytra_id = id;
                     user.set(t);
                 },
-                option{value:"None", "None"}
-                for cape in capes.cloned().unwrap_or_default(){
-                    option { value:cape.id, "{cape.skin_name}" }
-                }
-            }
-            select {
-                onchange: move |e|{
-                    let mut t = user.read().clone();
-                    let mut id:Option<String>=Some(e.value().clone());
-                    if id==Some("None".to_string()){
-                        id=None;
-                    }
-                    t.selected_elytra_id=id;
-                    user.set(t);
-
-                },
-                option{value:"None", "None"}
-                for elytrum in elytra.cloned().unwrap_or_default(){
-                    option { value:elytrum.id, "{elytrum.skin_name}" }
+                option { value: "None", "None" }
+                for elytrum in elytra.cloned().unwrap_or_default() {
+                    option { value: elytrum.id, "{elytrum.skin_name}" }
                 }
             }
 
@@ -108,24 +113,21 @@ pub fn UserEdit(id: String) -> Element {
                 onclick: move |_| {
                     async move {
                         let nav = navigator();
-                    let t = user.read().clone();
-                    api::create_user(t).await.unwrap();
-                    nav.push(Route::UserList{});
-
-                }
-
+                        let t = user.read().clone();
+                        api::create_user(t).await.unwrap();
+                        nav.push(Route::UserList {});
+                    }
                 },
                 "Save"
             }
             button {
-                onclick: move|_|{
+                onclick: move |_| {
                     async move {
                         let nav = navigator();
-                    let t = user.read().clone();
-                    api::del_user_by_id(t).await.unwrap();
-                    nav.push(Route::UserList{});
-
-                }
+                        let t = user.read().clone();
+                        api::del_user_by_id(t).await.unwrap();
+                        nav.push(Route::UserList {});
+                    }
                 },
                 "delete"
             }

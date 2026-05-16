@@ -2,6 +2,7 @@ use sqlx::SqlitePool;
 use tokio::sync::OnceCell;
 mod textures;
 mod user;
+mod groups;
 
 static DATABASE: OnceCell<Db> = OnceCell::const_new();
 

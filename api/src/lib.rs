@@ -4,7 +4,6 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
-
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +30,7 @@ pub fn init(component: fn() -> Element) {
         });
 }
 
-#[derive(Debug, Deserialize, Clone, Default, Serialize)]
+#[derive(Debug, Deserialize, Clone, Default, PartialEq, Serialize)]
 pub struct User {
     pub id: String,
     pub username: String,
@@ -41,12 +40,56 @@ pub struct User {
     pub selected_elytra_id: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Clone, PartialEq, Default, Serialize)]
+pub struct Group {
+    pub id: String,
+    pub group_name: String,
+    pub permissions: Permissions,
+}
+
+#[derive(Debug, Deserialize, Clone, Default, PartialEq, Serialize)]
+pub struct Permissions(i64);
+
+#[repr(u8)]
+#[derive(EnumIter, AsRefStr, Clone, PartialEq, Debug)]
+pub enum Permission {
+    EditGroups = 0,
+    EditOtherUser = 1,
+}
+
+impl Permissions {
+    pub const ALL: [Permission; 2] = [Permission::EditGroups, Permission::EditOtherUser];
+
+    pub fn has_permission(&self, perm: Permission) -> bool {
+        (self.0 & (1 << perm as i64)) != 0
+    }
+
+    pub fn set_permission(&mut self, perm: Permission, state: bool) {
+        if state {
+            self.0 |= 1 << perm as i64;
+        } else {
+            self.0 &= !(1 << perm as i64);
+        }
+    }
+}
+
+impl From<i64> for Permissions {
+    fn from(value: i64) -> Self {
+        Self(value)
+    }
+}
 
 mod users;
+use strum_macros::{AsRefStr, EnumIter};
 pub use users::*;
 
 mod textures;
 pub use textures::*;
+
+mod groups;
+pub use groups::*;
+
+mod auth;
 
 #[server]
 pub async fn hash_password(password: String) -> Result<String, ServerFnError> {

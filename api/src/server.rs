@@ -17,7 +17,7 @@ pub async fn init(component: fn() -> Element) -> Result<(), anyhow::Error> {
     let address = SocketAddr::new(ip, port);
     let listener = tokio::net::TcpListener::bind(address).await.unwrap();
     use axum::routing::get;
-
+ 
     let router = axum::Router::new()
         .route("/health", get(|| async { "OK" }))
         .route("/skin/:user_name", get(get_user_skin))

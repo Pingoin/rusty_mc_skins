@@ -5,20 +5,36 @@ edition = "2021"
 
 [dependencies]
 dioxus = { workspace = true, features = ["fullstack"] }
-tokio = { workspace = true, features = ["full"],optional = true }
-axum = { workspace = true ,optional = true}
+tokio = { workspace = true, features = ["full"], optional = true }
+axum = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 anyhow = { workspace = true }
-sqlx = {workspace = true ,optional = true, features = ["sqlite","runtime-tokio"] }
-uuid = { workspace = true ,optional = true, features = ["serde", "v4"] }
+sqlx = { workspace = true, optional = true, features = [
+    "sqlite",
+    "runtime-tokio",
+] }
+uuid = { workspace = true, optional = true, features = ["serde", "v4"] }
 base64 = { workspace = true }
-tower-http = { workspace = true ,optional = true, features = ["cors"] }
-argon2 = { workspace = true ,optional = true}
-rand = { workspace = true ,optional = true}
+tower-http = { workspace = true, optional = true, features = ["cors"] }
+argon2 = { workspace = true, optional = true }
+rand = { workspace = true, optional = true }
 image = { workspace = true }
+jsonwebtoken = { workspace = true, optional = true, features = ["aws_lc_rs"] }
+strum = { workspace = true }
+strum_macros = { workspace = true }
 
 
 [features]
 default = []
-server = ["dioxus/server", "dep:axum", "dep:tokio","dep:sqlx", "dep:uuid", "dep:tower-http","dep:argon2","dep:rand"]
+server = [
+    "dioxus/server",
+    "dep:axum",
+    "dep:tokio",
+    "dep:sqlx",
+    "dep:jsonwebtoken",
+    "dep:uuid",
+    "dep:tower-http",
+    "dep:argon2",
+    "dep:rand",
+]
 web = ["dioxus/fullstack"]

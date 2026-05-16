@@ -10,23 +10,23 @@ pub fn Echo() -> Element {
     rsx! {
         document::Link { rel: "stylesheet", href: ECHO_CSS }
         section {
-            article{
-            h4 { "ServerFn Echo" }
-            input {
-                placeholder: "Type here to echo...",
-                oninput:  move |event| async move {
-                    let data = api::echo(event.value()).await.unwrap();
-                    response.set(data);
-                },
-            }
+            article {
+                h4 { "ServerFn Echo" }
+                input {
+                    placeholder: "Type here to echo...",
+                    oninput: move |event| async move {
+                        let data = api::echo(event.value()).await.unwrap();
+                        response.set(data);
+                    },
+                }
 
-            if !response().is_empty() {
-                p {
-                    "Server echoed: "
-                    i { "{response}" }
+                if !response().is_empty() {
+                    p {
+                        "Server echoed: "
+                        i { "{response}" }
+                    }
                 }
             }
-        }
         }
     }
 }

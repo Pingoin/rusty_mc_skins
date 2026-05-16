@@ -3,7 +3,7 @@ use std::io::Cursor;
 use base64::prelude::*;
 use dioxus::prelude::*;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::imageops::{self, overlay, replace, resize};
+use image::imageops::{ overlay, replace};
 use image::{DynamicImage, GenericImageView, RgbaImage};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

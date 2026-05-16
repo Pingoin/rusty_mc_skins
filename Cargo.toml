@@ -18,6 +18,9 @@ tower-http = { version = "0.6.6", features = ["cors"] }
 argon2 = "0.5.3"
 rand = "0.9.2"
 image = "0.25.8"
+jsonwebtoken = "10.1.0"
+strum = "0.27"
+strum_macros = "0.27"
 
 # workspace
 ui = { path = "ui" }
@@ -34,3 +37,4 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
+

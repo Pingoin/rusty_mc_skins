@@ -1,25 +1,25 @@
-use api::get_users;
+use api::get_groups;
 use dioxus::prelude::*;
 
 use crate::views::Route;
 
 #[component]
-pub fn UserList() -> Element {
-    let users = use_resource(|| async move { get_users().await.unwrap_or_default() });
+pub fn GroupList() -> Element {
+    let groups = use_resource(|| async move { get_groups().await.unwrap_or_default() });
     rsx! {
 
         article {
-            h1 { "User List" }
+            h1 { "Group List" }
             ul {
-                for user in users.cloned().unwrap_or_default() {
+                for group in groups.cloned().unwrap_or_default() {
                     li {
-                        "{user.username}"
+                        "{group.group_name}"
                         button {
                             onclick: move |_| {
-                                let user = user.clone();
+                                let group = group.clone();
                                 let nav = navigator();
-                                nav.push(Route::UserEdit {
-                                    id: user.clone().id.clone(),
+                                nav.push(Route::GroupEdit {
+                                    id: group.clone().id.clone(),
                                 });
                             },
                             "Edit"

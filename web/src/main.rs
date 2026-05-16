@@ -29,7 +29,7 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        header {  }
+        header {}
 
         Router::<Route> {}
     }
@@ -40,11 +40,9 @@ fn App() -> Element {
 #[component]
 fn WebNavbar() -> Element {
     rsx! {
-        Navbar {
-            NavItems {}
-        }
+        Navbar { NavItems {} }
         main { Outlet::<Route> {} }
 
-        footer {  }
+        footer {}
     }
 }
