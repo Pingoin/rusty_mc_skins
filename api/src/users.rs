@@ -4,8 +4,8 @@ use crate::db;
 use super::User;
 use dioxus::prelude::*;
 
-#[server(CreateUser)]
-pub async fn create_user(user: User) -> Result<User, ServerFnError> {
+#[post("/api/user/create")]
+pub async fn create_user(user: User) -> Result<User> {
     let database = db::get_db().await;
     // Optionally, add the user to the database here
     let user = database.add_user(user).await?;
@@ -13,26 +13,26 @@ pub async fn create_user(user: User) -> Result<User, ServerFnError> {
     Ok(user)
 }
 
-#[server(GetUsers)]
-pub async fn get_users() -> Result<Vec<User>, ServerFnError> {
+#[get("/api/user/list")]
+pub async fn get_users() -> Result<Vec<User>> {
     // Optionally, retrieve user data from the database here
     let database = db::get_db().await;
     let users = database.get_users().await?;
     Ok(users)
 }
 
-#[server(GetUserById)]
-pub async fn get_user_by_id(id: String) -> Result<User, ServerFnError> {
+#[get("/api/user/{id}")]
+pub async fn get_user_by_id(id: String) -> Result<User> {
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
     let user = database.get_user_by_id(id).await?;
     Ok(user)
 }
 
-#[server(DelUserById)]
-pub async fn del_user_by_id(tex: User) -> Result<(), ServerFnError> {
+#[post("/api/user/{id}/del")]
+pub async fn del_user_by_id(id: String) -> Result<()> {
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
-    database.del_user_by_id(tex.id).await?;
+    database.del_user_by_id(id).await?;
     Ok(())
 }

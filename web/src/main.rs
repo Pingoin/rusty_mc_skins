@@ -9,15 +9,21 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.scss");
 
 fn main() {
-    #[cfg(feature = "web")]
-    // Hydrate the application on the client
-    dioxus::launch(App);
-
-    // Launch axum on the server
+    // Run `serve()` on the server only
     #[cfg(feature = "server")]
-    {
-        api::init(App);
-    }
+    dioxus::serve(|| async move {
+        // Create a new router for our app using the `router` function
+        let router=api::get_router(App).await;
+        
+        // .. customize the router, adding layers and new routes
+
+        // And then return the router
+        Ok(router)
+    });
+
+    // When not on the server, just run `launch()` like normal
+    #[cfg(not(feature = "server"))]
+    dioxus::launch(App);
 }
 
 #[component]

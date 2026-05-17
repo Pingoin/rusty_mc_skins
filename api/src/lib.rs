@@ -1,7 +1,6 @@
 //! This crate contains all shared fullstack server functions.
 #[cfg(feature = "server")]
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
 use dioxus::prelude::*;
@@ -11,24 +10,11 @@ use serde::{Deserialize, Serialize};
 mod db;
 #[cfg(feature = "server")]
 mod server;
+#[cfg(feature = "server")]
+pub use server::get_router;
 
 #[cfg(feature = "server")]
 mod app_error;
-
-/// Echo the user input on the server.
-#[server(Echo)]
-pub async fn echo(input: String) -> Result<String, ServerFnError> {
-    Ok(input.to_uppercase())
-}
-
-#[cfg(feature = "server")]
-pub fn init(component: fn() -> Element) {
-    tokio::runtime::Runtime::new()
-        .unwrap()
-        .block_on(async move {
-            server::init(component).await.unwrap();
-        });
-}
 
 #[derive(Debug, Deserialize, Clone, Default, PartialEq, Serialize)]
 pub struct User {
@@ -93,16 +79,19 @@ mod auth;
 
 #[server]
 pub async fn hash_password(password: String) -> Result<String, ServerFnError> {
-    let salt = SaltString::generate(&mut OsRng);
+    //let salt = SaltString::generate(&mut OsRng);
+    let salt = "example salt";
 
     // Argon2 with default params (Argon2id v19)
     let argon2 = Argon2::default();
 
     // Hash password to PHC string ($argon2id$v=19$...)
-    let password_hash = argon2
+    /*let password_hash = argon2
         .hash_password(password.as_bytes(), &salt)
         .unwrap()
-        .to_string();
+        .to_string();*/
+
+    let password_hash =password;
     // Passwort hashen
     Ok(password_hash)
 }

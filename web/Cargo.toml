@@ -7,11 +7,11 @@ edition = "2021"
 dioxus = { workspace = true, features = ["router", "fullstack"] }
 api = { workspace = true }
 tokio = { workspace = true, features = ["full"], optional = true }
-axum = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"]}
 strum = { workspace = true }
+rfd = { workspace = true }
 
 [features]
 default = []
 web = ["dioxus/web"]
-server = ["dioxus/server", "dep:axum", "dep:tokio","api/server"]
+server = ["dioxus/server", "dep:tokio","api/server"]

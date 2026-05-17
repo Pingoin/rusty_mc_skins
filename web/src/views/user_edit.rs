@@ -8,18 +8,18 @@ pub fn UserEdit(id: String) -> Element {
     let mut user = use_signal(|| User::default());
 
     let skins = use_resource(|| async move {
-        get_textures_by_type(SkinType::Skin)
+        get_textures_by_type(SkinType::Skin.into())
             .await
             .unwrap_or_default()
     });
 
     let capes = use_resource(|| async move {
-        get_textures_by_type(SkinType::Cape)
+        get_textures_by_type(SkinType::Cape.into())
             .await
             .unwrap_or_default()
     });
     let elytra = use_resource(|| async move {
-        get_textures_by_type(SkinType::Elytra)
+        get_textures_by_type(SkinType::Elytra.into())
             .await
             .unwrap_or_default()
     });
@@ -125,7 +125,7 @@ pub fn UserEdit(id: String) -> Element {
                     async move {
                         let nav = navigator();
                         let t = user.read().clone();
-                        api::del_user_by_id(t).await.unwrap();
+                        api::del_user_by_id(t.id).await.unwrap();
                         nav.push(Route::UserList {});
                     }
                 },

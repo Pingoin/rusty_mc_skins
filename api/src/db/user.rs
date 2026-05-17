@@ -1,4 +1,4 @@
-use crate::User;
+use crate::{Blob, User};
 use crate::{app_error::AppError, SkinType};
 use sqlx::query;
 
@@ -66,7 +66,7 @@ impl Db {
         &self,
         user_name: String,
         texture_type: SkinType,
-    ) -> Result<Option<Vec<u8>>, AppError> {
+    ) -> Result<Option<Blob>, AppError> {
         let tex: String = texture_type.clone().into();
 
         let row = match texture_type.clone(){
@@ -76,6 +76,7 @@ impl Db {
             .await?.map(|row| row.image_data),
                 SkinType::Elytra =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_elytra_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex).fetch_optional(&self.pool).await?.map(|row| row.image_data),
             };
-        Ok(row)
+        
+        Ok(row.map(|data| Blob(data)))
     }
 }

@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 dioxus = { workspace = true, features = ["fullstack"] }
 tokio = { workspace = true, features = ["full"], optional = true }
-axum = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 anyhow = { workspace = true }
 sqlx = { workspace = true, optional = true, features = [
@@ -28,7 +27,6 @@ strum_macros = { workspace = true }
 default = []
 server = [
     "dioxus/server",
-    "dep:axum",
     "dep:tokio",
     "dep:sqlx",
     "dep:jsonwebtoken",

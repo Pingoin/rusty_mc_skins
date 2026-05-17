@@ -1,9 +1,10 @@
 use std::io::Cursor;
-
 use base64::prelude::*;
+use dioxus::fullstack::body::Body;
+use dioxus::fullstack::response::{IntoResponse, Response};
 use dioxus::prelude::*;
 use image::codecs::png::{CompressionType, FilterType, PngEncoder};
-use image::imageops::{ overlay, replace};
+use image::imageops::{overlay, replace};
 use image::{DynamicImage, GenericImageView, RgbaImage};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -11,41 +12,41 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[cfg(feature = "server")]
 use crate::db;
 
-#[server(CreateTexture)]
-pub async fn create_texture(texture: Texture) -> Result<Texture, ServerFnError> {
+#[post("/api/texture/create")]
+pub async fn create_texture(texture: Texture) -> Result<Texture> {
     let database = db::get_db().await;
     let texture = database.add_texture(texture).await?;
     Ok(texture)
 }
 
-#[server(GetTextures)]
-pub async fn get_textures() -> Result<Vec<Texture>, ServerFnError> {
+#[get("/api/texture/list")]
+pub async fn get_textures() -> Result<Vec<Texture>> {
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
     let textures = database.get_textures().await?;
     Ok(textures)
 }
 
-#[server(GetTextureById)]
-pub async fn get_texture_by_id(id: String) -> Result<Texture, ServerFnError> {
+#[get("/api/texture/{id}")]
+pub async fn get_texture_by_id(id: String) -> Result<Texture> {
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
     let textures = database.get_texture_by_id(id).await?;
     Ok(textures)
 }
 
-#[server(DelTextureById)]
-pub async fn del_texture_by_id(tex: Texture) -> Result<(), ServerFnError> {
+#[post("/api/texture/{id}/del")]
+pub async fn del_texture_by_id(id: String) -> Result<()> {
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
-    database.del_texture_by_id(tex.id).await?;
+    database.del_texture_by_id(id).await?;
     Ok(())
 }
 
-#[server(DelTextureByType)]
-pub async fn get_textures_by_type(tex_type: SkinType) -> Result<Vec<Texture>, ServerFnError> {
+#[get("/api/texture/list/{tex_type}")]
+pub async fn get_textures_by_type(tex_type: String) -> Result<Vec<Texture>> {
     let database = db::get_db().await;
-    let tex = database.get_textures_by_type(tex_type).await?;
+    let tex = database.get_textures_by_type(tex_type.into()).await?;
     Ok(tex)
 }
 
@@ -95,8 +96,6 @@ impl Texture {
         )?
         .to_rgba8();
 
-        
-
         let mut buf = Vec::new();
         let mut cursor = Cursor::new(&mut buf);
 
@@ -118,57 +117,153 @@ impl Texture {
             image::ImageFormat::Png,
         )?
         .to_rgba8();
-    
-        let factor=img.width()/64;
-        let ratio=img.width()/img.height();
 
-        let mut output = RgbaImage::new(18*factor, 34*factor);
-        if ratio == 1{
+        let factor = img.width() / 64;
+        let ratio = img.width() / img.height();
 
-        // Base Skin
-        let head = img.view(8 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
-        let left_leg = img.view(4 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
-        let right_leg = img.view(20 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
-        let left_arm = img.view(44 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
-        let right_arm = img.view(36 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
-        let body = img.view(20 * factor, 20 * factor, 8 * factor, 12 * factor).to_image();
-        replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-        replace(&mut output, &left_leg, (4 * factor).into(), (20 * factor).into());
-        replace(&mut output, &right_leg, (8 * factor).into(), (20 * factor).into());
-        replace(&mut output, &left_arm, (0 * factor).into(), (8 * factor).into());
-        replace(&mut output, &right_arm, (12 * factor).into(), (8 * factor).into());
-        replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+        let mut output = RgbaImage::new(18 * factor, 34 * factor);
+        if ratio == 1 {
+            // Base Skin
+            let head = img
+                .view(8 * factor, 8 * factor, 8 * factor, 8 * factor)
+                .to_image();
+            let left_leg = img
+                .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let right_leg = img
+                .view(20 * factor, 52 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let left_arm = img
+                .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let right_arm = img
+                .view(36 * factor, 52 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let body = img
+                .view(20 * factor, 20 * factor, 8 * factor, 12 * factor)
+                .to_image();
+            replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+            replace(
+                &mut output,
+                &left_leg,
+                (4 * factor).into(),
+                (20 * factor).into(),
+            );
+            replace(
+                &mut output,
+                &right_leg,
+                (8 * factor).into(),
+                (20 * factor).into(),
+            );
+            replace(
+                &mut output,
+                &left_arm,
+                (0 * factor).into(),
+                (8 * factor).into(),
+            );
+            replace(
+                &mut output,
+                &right_arm,
+                (12 * factor).into(),
+                (8 * factor).into(),
+            );
+            replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
 
-        // Top layer     
-        let head = img.view(40 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
-        let left_leg = img.view(4 * factor, 36 * factor, 4 * factor, 12 * factor).to_image();
-        let right_leg = img.view(4 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
-        let left_arm = img.view(44 * factor, 36 * factor, 4 * factor, 12 * factor).to_image();
-        let right_arm = img.view(52 * factor, 52 * factor, 4 * factor, 12 * factor).to_image();
-        let body = img.view(20 * factor, 36 * factor, 8 * factor, 12 * factor).to_image();
-        overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-        overlay(&mut output, &left_leg, (4 * factor).into(), (20 * factor).into());
-        overlay(&mut output, &right_leg, (8 * factor).into(), (20 * factor).into());
-        overlay(&mut output, &left_arm, (0 * factor).into(), (8 * factor).into());
-        overlay(&mut output, &right_arm, (12 * factor).into(), (8 * factor).into());
-        overlay(&mut output, &body, (4 * factor).into(), (8 * factor).into());
-        }else{
-        let head = img.view(8 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
-        let left_leg = img.view(4 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
-        let right_leg = img.view(4 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
-        let left_arm = img.view(44 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
-        let right_arm = img.view(44 * factor, 20 * factor, 4 * factor, 12 * factor).to_image();
-        let body = img.view(20 * factor, 20 * factor, 8 * factor, 12 * factor).to_image();
-        replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-        replace(&mut output, &left_leg, (4 * factor).into(), (20 * factor).into());
-        replace(&mut output, &right_leg, (8 * factor).into(), (20 * factor).into());
-        replace(&mut output, &left_arm, (0 * factor).into(), (8 * factor).into());
-        replace(&mut output, &right_arm, (12 * factor).into(), (8 * factor).into());
-        replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+            // Top layer
+            let head = img
+                .view(40 * factor, 8 * factor, 8 * factor, 8 * factor)
+                .to_image();
+            let left_leg = img
+                .view(4 * factor, 36 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let right_leg = img
+                .view(4 * factor, 52 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let left_arm = img
+                .view(44 * factor, 36 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let right_arm = img
+                .view(52 * factor, 52 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let body = img
+                .view(20 * factor, 36 * factor, 8 * factor, 12 * factor)
+                .to_image();
+            overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+            overlay(
+                &mut output,
+                &left_leg,
+                (4 * factor).into(),
+                (20 * factor).into(),
+            );
+            overlay(
+                &mut output,
+                &right_leg,
+                (8 * factor).into(),
+                (20 * factor).into(),
+            );
+            overlay(
+                &mut output,
+                &left_arm,
+                (0 * factor).into(),
+                (8 * factor).into(),
+            );
+            overlay(
+                &mut output,
+                &right_arm,
+                (12 * factor).into(),
+                (8 * factor).into(),
+            );
+            overlay(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+        } else {
+            let head = img
+                .view(8 * factor, 8 * factor, 8 * factor, 8 * factor)
+                .to_image();
+            let left_leg = img
+                .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let right_leg = img
+                .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let left_arm = img
+                .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let right_arm = img
+                .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
+                .to_image();
+            let body = img
+                .view(20 * factor, 20 * factor, 8 * factor, 12 * factor)
+                .to_image();
+            replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+            replace(
+                &mut output,
+                &left_leg,
+                (4 * factor).into(),
+                (20 * factor).into(),
+            );
+            replace(
+                &mut output,
+                &right_leg,
+                (8 * factor).into(),
+                (20 * factor).into(),
+            );
+            replace(
+                &mut output,
+                &left_arm,
+                (0 * factor).into(),
+                (8 * factor).into(),
+            );
+            replace(
+                &mut output,
+                &right_arm,
+                (12 * factor).into(),
+                (8 * factor).into(),
+            );
+            replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
 
-        let head = img.view(40 * factor, 8 * factor, 8 * factor, 8 * factor).to_image();
-        overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-
+            let head = img
+                .view(40 * factor, 8 * factor, 8 * factor, 8 * factor)
+                .to_image();
+            overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
         }
 
         let mut buf = Vec::new();
@@ -220,5 +315,16 @@ impl<'de> Deserialize<'de> for Blob {
 impl From<Vec<u8>> for Blob {
     fn from(vec: Vec<u8>) -> Self {
         Blob(vec)
+    }
+}
+
+impl IntoResponse for Blob {
+    fn into_response(self) -> Response {
+        Response::builder()
+            .status(200)
+            .header("Content-Type", "image/png")
+            .header("cache-control", "max-age=3600")
+            .body(Body::from(self.0))
+            .unwrap()
     }
 }

@@ -9,14 +9,12 @@ pub fn UserGroupConnection(
 )-> Element{
     let user_id=user.clone().id.clone();
     let group_id=group.clone().id.clone();
-    let is_member=use_resource(async move||{
-        user_is_member(user_id,group_id).await.unwrap_or_default()
-    });
+//    let is_member=use_resource(async move||{
+//        user_is_member(user_id,group_id).await.unwrap_or_default()
+//    });
 
 
     
 
-    rsx!{
-
-    }
+    rsx!{}
 }

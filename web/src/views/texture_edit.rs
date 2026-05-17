@@ -1,5 +1,6 @@
 use api::{get_texture_by_id, Blob, SkinType, Texture};
 use dioxus::prelude::*;
+use rfd::AsyncFileDialog;
 
 use crate::views::Route;
 
@@ -43,27 +44,21 @@ pub fn TextureEdit(id: String) -> Element {
                 option { value: "Cape", "Cape" }
                 option { value: "Elytra", "Elytra" }
             }
-            input {
-                // tell the input to pick a file
-                r#type: "file",
-                // list the accepted extensions
-                accept: ".png",
-                // pick multiple files
-                multiple: false,
-                onchange: move |evt| {
+            button {
+                onclick: move |_| {
                     async move {
-                        if let Some(file_engine) = &evt.files() {
-                            let files = file_engine.files();
-                            if files.len() > 0 {
-                                let file = &files[0];
-                                let mut t = texture.read().clone();
-                                let data = file_engine.read_file(file).await.unwrap_or_default();
-                                t.image_data = Blob(data);
-                                texture.set(t);
-                            }
-                        }
+                        let file = AsyncFileDialog::new()
+                            .add_filter("Textures", &["png"])
+                            .set_directory("/")
+                            .pick_file()
+                            .await;
+                        let data = Blob(file.unwrap().read().await);
+                        let mut t = texture.read().clone();
+                        t.image_data = data;
+                        texture.set(t);
                     }
                 },
+                "Pick Texture"
             }
 
             img {
@@ -86,7 +81,7 @@ pub fn TextureEdit(id: String) -> Element {
                     async move {
                         let nav = navigator();
                         let t = texture.read().clone();
-                        api::del_texture_by_id(t).await.unwrap();
+                        api::del_texture_by_id(t.id).await.unwrap();
                         nav.push(Route::TextureList {});
                     }
                 },

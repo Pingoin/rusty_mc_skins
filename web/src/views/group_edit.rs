@@ -64,7 +64,7 @@ pub fn GroupEdit(id: String) -> Element {
                     async move {
                         let nav = navigator();
                         let t = group.read().clone();
-                        api::del_group_by_id(t).await.unwrap();
+                        api::del_group_by_id(t.id).await.unwrap();
                         nav.push(Route::GroupList {});
                     }
                 },
