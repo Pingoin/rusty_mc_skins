@@ -1,18 +1,41 @@
-use serde::{Serialize, Deserialize};
-#[cfg(feature = "server")]
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
+use async_trait::async_trait;
+use axum_session_auth::*;
+use axum_session_sqlx::SessionSqlitePool;
+use serde::{Deserialize, Serialize};
+use sqlx::sqlite::SqlitePool;
+use std::collections::HashSet;
 
-/// Our claims struct, it needs to derive `Serialize` and/or `Deserialize`
-#[derive(Debug, Default,Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    company: String,
-    exp: usize,
+use crate::{User, db::Db};
+
+pub(crate) type Session = axum_session_auth::AuthSession<User, String, SessionSqlitePool, Db>;
+pub(crate) type AuthLayer =
+    axum_session_auth::AuthSessionLayer<User, String, SessionSqlitePool, Db>;
+
+
+
+#[async_trait]
+impl Authentication<User, String, Db> for User {
+    async fn load_user(userid: String, pool: Option<&Db>) -> Result<User, anyhow::Error> {
+
+
+        Ok(User::default())
+    }
+
+    fn is_authenticated(&self) -> bool {
+        !self.anonymous
+    }
+
+    fn is_active(&self) -> bool {
+        !self.anonymous
+    }
+
+    fn is_anonymous(&self) -> bool {
+        self.anonymous
+    }
 }
-
-#[cfg(feature = "server")]
-pub async fn get_token()->Result<String,anyhow::Error>{
-    let claims = Claims::default();
-    let res=encode(&Header::default(), &claims, &EncodingKey::from_secret("secret".as_ref()))?;
-    Ok(res)
+#[async_trait]
+impl HasPermission<SqlitePool> for User {
+    async fn has(&self, perm: &str, _pool: &Option<&SqlitePool>) -> bool {
+        self.permissions.contains(perm)
+    }
 }

@@ -6,14 +6,16 @@ mod components;
 mod views;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
+const TAILWIND: Asset = asset!("/assets/tailwind.css");
 const MAIN_CSS: Asset = asset!("/assets/main.scss");
+
 
 fn main() {
     // Run `serve()` on the server only
     #[cfg(feature = "server")]
     dioxus::serve(|| async move {
         // Create a new router for our app using the `router` function
-        let router=api::get_router(App).await;
+        let router=api::get_router(App).await?;
         
         // .. customize the router, adding layers and new routes
 
@@ -33,8 +35,8 @@ fn App() -> Element {
     rsx! {
         // Global app resources
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS }
-
+        //document::Link { rel: "stylesheet", href: MAIN_CSS }
+        document::Link { rel: "stylesheet", href: TAILWIND }
         header {}
 
         Router::<Route> {}

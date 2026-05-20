@@ -14,13 +14,25 @@ sqlx = { workspace = true, optional = true, features = [
 ] }
 uuid = { workspace = true, optional = true, features = ["serde", "v4"] }
 base64 = { workspace = true }
-tower-http = { workspace = true, optional = true, features = ["cors"] }
 argon2 = { workspace = true, optional = true }
-rand = { workspace = true, optional = true }
 image = { workspace = true }
-jsonwebtoken = { workspace = true, optional = true, features = ["aws_lc_rs"] }
 strum = { workspace = true }
 strum_macros = { workspace = true }
+rand_core = { workspace = true, optional = true }
+async-trait= { workspace = true, optional = true }
+
+[dependencies.axum_session]
+workspace = true
+optional = true
+
+[dependencies.axum_session_auth]
+workspace = true
+optional = true
+
+[dependencies.axum_session_sqlx]
+workspace = true
+features = ["sqlite"]
+optional = true
 
 
 [features]
@@ -29,10 +41,12 @@ server = [
     "dioxus/server",
     "dep:tokio",
     "dep:sqlx",
-    "dep:jsonwebtoken",
     "dep:uuid",
-    "dep:tower-http",
     "dep:argon2",
-    "dep:rand",
+    "dep:rand_core",
+    "dep:axum_session",
+    "dep:axum_session_auth",
+    "dep:axum_session_sqlx",
+"dep:async-trait",
 ]
 web = ["dioxus/fullstack"]

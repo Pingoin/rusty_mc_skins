@@ -6,6 +6,7 @@ use crate::views::Route;
 #[component]
 pub fn UserEdit(id: String) -> Element {
     let mut user = use_signal(|| User::default());
+    let mut password =use_signal(|| String::default());
 
     let skins = use_resource(|| async move {
         get_textures_by_type(SkinType::Skin.into())
@@ -46,11 +47,8 @@ pub fn UserEdit(id: String) -> Element {
             input {
                 value: "password",
                 oninput: move |e| {
-                    let mut t = user.read().clone();
                     async move {
-                        let pwh = api::hash_password(e.value().clone()).await.unwrap_or_default();
-                        t.password_hash = pwh;
-                        user.set(t);
+                        password.set(e.value().clone());
                     }
                 },
             }
@@ -63,9 +61,6 @@ pub fn UserEdit(id: String) -> Element {
                     }
                     t.selected_skin_id = id;
                     user.set(t);
-                    async {
-                        api::hash_password("heinz".to_string()).await.unwrap_or_default();
-                    }
                 },
                 option { value: "None", "None" }
                 for skin in skins.cloned().unwrap_or_default() {
@@ -114,7 +109,8 @@ pub fn UserEdit(id: String) -> Element {
                     async move {
                         let nav = navigator();
                         let t = user.read().clone();
-                        api::create_user(t).await.unwrap();
+                        let pass = password.read().clone();
+                        api::create_user(t, pass).await.unwrap();
                         nav.push(Route::UserList {});
                     }
                 },

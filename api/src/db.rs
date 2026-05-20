@@ -12,6 +12,7 @@ pub async fn get_db() -> &'static Db {
         .await
 }
 
+#[derive(Debug,Clone)]
 pub struct Db {
     pool: SqlitePool,
 }

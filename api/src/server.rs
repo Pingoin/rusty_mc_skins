@@ -5,12 +5,34 @@ use dioxus::{prelude::*, server::axum::Router};
 
 use crate::{db, Blob, SkinType};
 
-pub async fn get_router(app: fn() -> Element) -> Router {
+pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
+    use crate::auth::*;
+    use axum_session::{SessionConfig, SessionLayer, SessionStore};
+    use axum_session_auth::AuthConfig;
+    use axum_session_sqlx::SessionSqlitePool;
+    use sqlx::sqlite::SqlitePoolOptions;
+
+    let database = db::get_db().await;
+    let sessoin_db = SqlitePoolOptions::new()
+        .max_connections(20)
+        .connect_with("sqlite::memory:".parse()?)
+        .await?;
+
     let router = dioxus::server::router(app)
         .route("/skin/{user_name}", get(get_skin))
-        .route("/cape/{user_name}", get(get_cape));
+        .route("/cape/{user_name}", get(get_cape))
+        .layer(AuthLayer::new(Some(database.clone())).with_config(
+            AuthConfig::<String>::default().with_anonymous_user_id(Some("".to_ascii_uppercase())),
+        ))
+        .layer(SessionLayer::new(
+            SessionStore::<SessionSqlitePool>::new(
+                Some(sessoin_db.into()),
+                SessionConfig::default().with_table_name("session_table"),
+            )
+            .await?,
+        ));
 
-    router
+    Ok(router)
 }
 
 pub async fn get_skin(Path(user_name): Path<String>) -> Response {

@@ -5,10 +5,10 @@ use super::User;
 use dioxus::prelude::*;
 
 #[post("/api/user/create")]
-pub async fn create_user(user: User) -> Result<User> {
+pub async fn create_user(user: User,password:String) -> Result<User> {
     let database = db::get_db().await;
-    // Optionally, add the user to the database here
-    let user = database.add_user(user).await?;
+
+    let user = database.add_user(user,password).await?;
 
     Ok(user)
 }

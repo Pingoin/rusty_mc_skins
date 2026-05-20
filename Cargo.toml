@@ -13,15 +13,16 @@ anyhow = "1.0.102"
 sqlx = { version = "=0.8.6", features = ["sqlite","runtime-tokio"] }
 uuid = { version = "1.23.1", features = ["serde", "v4"] }
 base64 = "0.22.1"
-tower-http = { version = "0.6.6", features = ["cors"] }
 argon2 = "0.5.3"
-rand = "0.10.1"
 image = "0.25.10"
-jsonwebtoken = "10.4.0"
+rand_core = { version = "0.6", features = ["getrandom"] }
 strum = "0.28.0"
 strum_macros = "0.28.0"
 rfd = "0.17.2"
-
+axum_session = "0.20.1"
+axum_session_auth = "0.20.0"
+axum_session_sqlx = { version = "0.9.0", features = ["tls-rustls","sqlite"]}
+async-trait = { version = "0.1.88"}
 # workspace
 ui = { path = "ui" }
 api = { path = "api" }
