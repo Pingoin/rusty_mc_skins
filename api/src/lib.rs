@@ -25,7 +25,7 @@ pub use textures::*;
 mod groups;
 pub use groups::*;
 #[cfg(feature = "server")]
-mod auth;
+pub mod auth;
 
 #[derive(Debug, Deserialize, Clone, Default, PartialEq, Serialize)]
 pub struct User {

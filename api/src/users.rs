@@ -1,3 +1,5 @@
+#[cfg(feature="server")]
+use crate::auth;
 #[cfg(feature = "server")]
 use crate::db;
 
@@ -36,3 +38,19 @@ pub async fn del_user_by_id(id: String) -> Result<()> {
     database.del_user_by_id(id).await?;
     Ok(())
 }
+
+#[post("/api/user/me", auth: auth::Session)]
+pub async fn get_me()->Result<User>{
+    let user=auth.current_user;
+    if let Some(user) = user {
+        if user.anonymous{
+            Err(anyhow::anyhow!("anonymous User").into())
+        }else{
+            Ok(user)
+        }
+    }else{
+        Err(anyhow::anyhow!("no User").into())
+    }
+}
+
+
