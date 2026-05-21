@@ -9,3 +9,5 @@
 *.sqlite-shm
 *.sqlite-wal
 *.mjs
+
+/web/assets/tailwind.css
