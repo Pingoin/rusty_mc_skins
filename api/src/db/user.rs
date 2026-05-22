@@ -7,6 +7,7 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
+use argon2::{PasswordHash, PasswordVerifier};
 use sqlx::query;
 
 use super::Db;
@@ -60,6 +61,13 @@ impl Db {
         Ok(())
     }
 
+    pub(crate) async fn get_user_by_name(&self, name: String) -> Result<DbUser, AppError> {
+        let user = sqlx::query_as!(DbUser, "select * from users where username = ?", name)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(user.into())
+    }
+
     pub async fn add_user(&self, mut user: User, password: String) -> Result<User, AppError> {
         let id = if user.id.len() > 0 {
             user.id.clone()
@@ -104,13 +112,24 @@ impl Db {
     }
 }
 
-struct DbUser {
+pub(crate) struct DbUser {
     id: String,
     username: String,
     selected_skin_id: Option<String>,
     selected_cape_id: Option<String>,
     selected_elytra_id: Option<String>,
     password_hash: String,
+}
+
+impl DbUser {
+    pub fn verify_password(&self, password: String) -> anyhow::Result<()> {
+        let parsed_hash =
+            PasswordHash::new(&self.password_hash).map_err(|e| anyhow::anyhow!("{:?}", e))?;
+        Argon2::default()
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .map_err(|e| anyhow::anyhow!("{:?}", e))?;
+        Ok(())
+    }
 }
 
 impl Into<User> for DbUser {

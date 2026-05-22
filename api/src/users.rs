@@ -1,4 +1,4 @@
-#[cfg(feature="server")]
+#[cfg(feature = "server")]
 use crate::auth;
 #[cfg(feature = "server")]
 use crate::db;
@@ -7,10 +7,10 @@ use super::User;
 use dioxus::prelude::*;
 
 #[post("/api/user/create")]
-pub async fn create_user(user: User,password:String) -> Result<User> {
+pub async fn create_user(user: User, password: String) -> Result<User> {
     let database = db::get_db().await;
 
-    let user = database.add_user(user,password).await?;
+    let user = database.add_user(user, password).await?;
 
     Ok(user)
 }
@@ -40,17 +40,34 @@ pub async fn del_user_by_id(id: String) -> Result<()> {
 }
 
 #[post("/api/user/me", auth: auth::Session)]
-pub async fn get_me()->Result<User>{
-    let user=auth.current_user;
+pub async fn get_me() -> Result<User> {
+    let user = auth.current_user;
     if let Some(user) = user {
-        if user.anonymous{
+        if user.anonymous {
             Err(anyhow::anyhow!("anonymous User").into())
-        }else{
+        } else {
             Ok(user)
         }
-    }else{
+    } else {
         Err(anyhow::anyhow!("no User").into())
     }
 }
 
+/// We use the `auth::Session` extractor to get access to the current user session.
+/// This lets us modify the user session, log in/out, and access the current user.
+#[post("/api/user/login", auth: auth::Session)]
+pub async fn login(user: String, password: String) -> Result<()> {
+    let database = db::get_db().await;
+    let user = database.get_user_by_name(user).await?;
+    user.verify_password(password)?;
+    let user: User = user.into();
+    auth.login_user(user.id);
+    Ok(())
+}
 
+/// Just like `login`, but this time we log out the user.
+#[post("/api/user/logout", auth: auth::Session)]
+pub async fn logout() -> Result<()> {
+    auth.logout_user();
+    Ok(())
+}

@@ -1,4 +1,4 @@
-use api::{User, create_user, get_me};
+use api::{User, create_user, get_me, login, logout};
 use dioxus::prelude::*;
 
 #[component]
@@ -7,16 +7,14 @@ pub fn Home() -> Element {
 
     rsx! {
         article {
-            h2 { "Test" }
             {
                 if user.cloned().unwrap_or_default().is_some() {
-                    let bla = user.cloned().unwrap_or_default().unwrap_or_default();
                     rsx! {
-                        UserCard { user: bla }
+                        UserCard { user: user.clone() }
                     }
                 } else {
                     rsx! {
-                        LoginCard {}
+                        LoginCard { user: user.clone() }
                     }
                 }
             }
@@ -25,12 +23,29 @@ pub fn Home() -> Element {
 }
 
 #[component]
-fn UserCard(user: User) -> Element {
-    rsx! { "pimmel" }
+fn UserCard(user:  Resource<Option<User>>) -> Element {
+    rsx! {
+        div { class: "card card-border bg-base-100 w-96",
+            div { class: "card-body",
+                h2 { class: "card-title", "Ich" }
+                div { class: "card-actions justify-end",
+                    button {
+                        class: "btn btn-primary",
+                        onclick: move |_| async move {
+                            let _ = logout().await;
+                            user.set(Some(get_me().await.ok()));
+
+                        },
+                        {"Logout"}
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
-fn LoginCard() -> Element {
+fn LoginCard(user: Resource<Option<User>>) -> Element {
     let mut username = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
     let mut password2 = use_signal(|| "".to_string());
@@ -98,7 +113,9 @@ fn LoginCard() -> Element {
                     button {
                         class: "btn btn-primary",
                         onclick: move |_| async move {
-                            login_register(username(), password(), password2(), register()).await
+                            login_register(username(), password(), password2(), register()).await;
+                            user.set(Some(get_me().await.ok()));
+
                         },
                         {if register() { "register" } else { "login" }}
                     }
@@ -108,16 +125,16 @@ fn LoginCard() -> Element {
     }
 }
 
-
-async fn login_register(user_name:String,password1:String, password2:String,register:bool){
-    if register{
-        if password1 == password2{
+async fn login_register(user_name: String, password1: String, password2: String, register: bool) {
+    if register {
+        if password1 == password2 {
             let mut user = User::default();
-            user.anonymous=false;
-            user.username=user_name;
-            let _= create_user(user, password1).await;
-        }else{
-            
+            user.anonymous = false;
+            user.username = user_name;
+            let _ = create_user(user, password1).await;
+        } else {
         }
+    } else {
+        let _ = login(user_name, password1).await;
     }
 }

@@ -7,7 +7,7 @@ mod views;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
-const MAIN_CSS: Asset = asset!("/assets/main.scss");
+//const MAIN_CSS: Asset = asset!("/assets/main.scss");
 
 
 fn main() {
