@@ -61,6 +61,39 @@ impl Db {
         Ok(texture)
     }
 
+    pub async fn get_skin_by_user_id(&self, id: String) -> Result<Texture, AppError> {
+        let texture = sqlx::query_as!(Texture, 
+            "SELECT textures.id AS id,skin_name,texture_type,image_data 
+            FROM users INNER JOIN textures 
+            ON textures.id = users.selected_skin_id 
+            WHERE users.id = ? ", id)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(texture)
+    }
+
+    pub async fn get_cape_by_user_id(&self, id: String) -> Result<Texture, AppError> {
+        let texture = sqlx::query_as!(Texture, 
+            "SELECT textures.id AS id,skin_name,texture_type,image_data 
+            FROM users INNER JOIN textures 
+            ON textures.id = users.selected_cape_id 
+            WHERE users.id = ? ", id)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(texture)
+    }
+
+    pub async fn get_elytra_by_user_id(&self, id: String) -> Result<Texture, AppError> {
+        let texture = sqlx::query_as!(Texture, 
+            "SELECT textures.id AS id,skin_name,texture_type,image_data 
+            FROM users INNER JOIN textures 
+            ON textures.id = users.selected_elytra_id 
+            WHERE users.id = ? ", id)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(texture)
+    }
+
     pub async fn del_texture_by_id(&self, id: String) -> Result<(), AppError> {
         sqlx::query!("delete from textures where id = ?", id)
             .execute(&self.pool)

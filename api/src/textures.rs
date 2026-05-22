@@ -9,6 +9,8 @@ use image::{DynamicImage, GenericImageView, RgbaImage};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+#[cfg(feature="server")]
+use crate::auth;
 #[cfg(feature = "server")]
 use crate::db;
 
@@ -43,6 +45,20 @@ pub async fn del_texture_by_id(id: String) -> Result<()> {
     Ok(())
 }
 
+#[get("/api/texture/my/{tex_type}", auth: auth::Session)]
+pub async fn get_my_texture_type(tex_type:SkinType) -> Result<Texture> {
+    let id= auth.id;
+
+    // Optionally, retrieve user data from the database
+    let database = db::get_db().await;
+    let textures = match tex_type{
+        SkinType::Skin => database.get_skin_by_user_id(id).await?,
+        SkinType::Cape => database.get_cape_by_user_id(id).await?,
+        SkinType::Elytra => database.get_elytra_by_user_id(id).await?,
+    };
+    Ok(textures)
+}
+
 #[get("/api/texture/list/{tex_type}")]
 pub async fn get_textures_by_type(tex_type: String) -> Result<Vec<Texture>> {
     let database = db::get_db().await;
@@ -50,7 +66,7 @@ pub async fn get_textures_by_type(tex_type: String) -> Result<Vec<Texture>> {
     Ok(tex)
 }
 
-#[derive(Debug, Deserialize, Clone, Default, Serialize)]
+#[derive(Debug, Deserialize, Clone, strum_macros::Display,Default, Serialize)]
 pub enum SkinType {
     #[default]
     Skin,
@@ -328,3 +344,5 @@ impl IntoResponse for Blob {
             .unwrap()
     }
 }
+
+

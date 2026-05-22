@@ -1,4 +1,4 @@
-use api::{User, create_user, get_me, login, logout};
+use api::{create_user, get_me, get_my_texture_type, login, logout, User};
 use dioxus::prelude::*;
 
 #[component]
@@ -23,11 +23,62 @@ pub fn Home() -> Element {
 }
 
 #[component]
-fn UserCard(user:  Resource<Option<User>>) -> Element {
+fn UserCard(user: Resource<Option<User>>) -> Element {
+    let skin = use_resource(|| async move {
+        get_my_texture_type(api::SkinType::Skin)
+            .await
+            .ok()
+    });
+    let cape = use_resource(|| async move {
+        get_my_texture_type(api::SkinType::Cape)
+            .await
+            .ok()
+    });
+    let elytra = use_resource(|| async move {
+        get_my_texture_type(api::SkinType::Elytra)
+            .await
+            .ok()
+    });
     rsx! {
         div { class: "card card-border bg-base-100 w-96",
             div { class: "card-body",
                 h2 { class: "card-title", "Ich" }
+                {
+                    if let Some(Some(skin)) = skin.cloned() {
+                        rsx! {
+                            img {
+                                src: "data:image/png;base64,{skin.get_preview().unwrap_or_default().as_base64()}",
+                                width: "100",
+                            }
+                        }
+                    } else {
+                        rsx! {}
+                    }
+                }
+                {
+                    if let Some(Some(skin)) = elytra.cloned() {
+                        rsx! {
+                            img {
+                                src: "data:image/png;base64,{skin.get_preview().unwrap_or_default().as_base64()}",
+                                width: "100",
+                            }
+                        }
+                    } else {
+                        rsx! {}
+                    }
+                }
+                {
+                    if let Some(Some(skin)) = cape.cloned() {
+                        rsx! {
+                            img {
+                                src: "data:image/png;base64,{skin.get_preview().unwrap_or_default().as_base64()}",
+                                width: "100",
+                            }
+                        }
+                    } else {
+                        rsx! {}
+                    }
+                }
                 div { class: "card-actions justify-end",
                     button {
                         class: "btn btn-primary",
