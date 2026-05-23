@@ -37,9 +37,11 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         //document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: TAILWIND }
-        header {}
+        div { class: "bg-base-200 h-screen",
+            header {}
 
-        Router::<Route> {}
+            Router::<Route> {}
+        }
     }
 }
 

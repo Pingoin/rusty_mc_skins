@@ -1,3 +1,4 @@
+use api::TextureType;
 use dioxus::prelude::*;
 
 use crate::WebNavbar;
@@ -23,8 +24,8 @@ pub(crate) enum Route {
     #[layout(WebNavbar)]
     #[route("/")]
     Home {},
-    #[route("/texture/list")]
-    TextureList {},
+    #[route("/texture/:tex_type/list")]
+    TextureList {tex_type:TextureType},
     #[route("/texture/:id/edit")]
     TextureEdit { id: String },
     #[route("/user/list")]
@@ -44,7 +45,28 @@ pub fn NavItems() -> Element {
             Link { to: Route::Home {}, "Home" }
         }
         li {
-            Link { to: Route::TextureList {}, "Textures" }
+            Link {
+                to: Route::TextureList {
+                    tex_type: TextureType::Skin,
+                },
+                "Skins"
+            }
+        }
+        li {
+            Link {
+                to: Route::TextureList {
+                    tex_type: TextureType::Cape,
+                },
+                "Capes"
+            }
+        }
+        li {
+            Link {
+                to: Route::TextureList {
+                    tex_type: TextureType::Elytra,
+                },
+                "Elytra"
+            }
         }
         li {
             Link {

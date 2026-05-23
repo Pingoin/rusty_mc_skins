@@ -1,3 +1,4 @@
+use crate::Texture;
 #[cfg(feature = "server")]
 use crate::auth;
 #[cfg(feature = "server")]
@@ -13,6 +14,23 @@ pub async fn create_user(user: User, password: String) -> Result<User> {
     let user = database.add_user(user, password).await?;
 
     Ok(user)
+}
+
+#[post("/api/user/texture/set", auth: auth::Session)]
+pub async fn set_texture(texture:Texture, )->Result<()>{
+    let database = db::get_db().await;
+    if let Some(user) = auth.clone().current_user && !user.anonymous {
+        
+        if texture.id=="".to_string(){
+            database.set_texture(user.id.clone(), None, texture.texture_type).await?;
+        }else{
+            database.set_texture(user.id.clone(), Some(texture.id), texture.texture_type).await?;
+        }
+        auth.cache_clear_user(user.id);
+    }
+    
+
+    Ok(())
 }
 
 #[get("/api/user/list")]

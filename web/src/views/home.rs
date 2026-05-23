@@ -25,17 +25,17 @@ pub fn Home() -> Element {
 #[component]
 fn UserCard(user: Resource<Option<User>>) -> Element {
     let skin = use_resource(|| async move {
-        get_my_texture_type(api::SkinType::Skin)
+        get_my_texture_type(api::TextureType::Skin)
             .await
             .ok()
     });
     let cape = use_resource(|| async move {
-        get_my_texture_type(api::SkinType::Cape)
+        get_my_texture_type(api::TextureType::Cape)
             .await
             .ok()
     });
     let elytra = use_resource(|| async move {
-        get_my_texture_type(api::SkinType::Elytra)
+        get_my_texture_type(api::TextureType::Elytra)
             .await
             .ok()
     });

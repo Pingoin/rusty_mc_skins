@@ -1,6 +1,6 @@
 use sqlx::query;
 
-use crate::{app_error::AppError, Blob, SkinType, Texture};
+use crate::{app_error::AppError, Blob, TextureType, Texture};
 
 use super::Db;
 
@@ -13,9 +13,9 @@ impl Db {
         };
         let name = texture.skin_name.clone();
         let texture_type = match texture.texture_type {
-            crate::SkinType::Skin => "Skin",
-            crate::SkinType::Cape => "Cape",
-            crate::SkinType::Elytra => "Elytra",
+            TextureType::Skin => "Skin",
+            TextureType::Cape => "Cape",
+            TextureType::Elytra => "Elytra",
         };
         let image_data = texture.image_data.clone();
         query!(
@@ -42,10 +42,10 @@ impl Db {
                 id: row.id,
                 skin_name: row.skin_name,
                 texture_type: match row.texture_type.as_str() {
-                    "Skin" => crate::SkinType::Skin,
-                    "Cape" => crate::SkinType::Cape,
-                    "Elytra" => crate::SkinType::Elytra,
-                    _ => crate::SkinType::Skin, // fallback or handle error
+                    "Skin" => TextureType::Skin,
+                    "Cape" => TextureType::Cape,
+                    "Elytra" => TextureType::Elytra,
+                    _ => TextureType::Skin, // fallback or handle error
                 },
                 image_data: Blob(row.image_data),
             })
@@ -101,7 +101,7 @@ impl Db {
         Ok(())
     }
 
-    pub async fn get_textures_by_type(&self, tex_type: SkinType) -> Result<Vec<Texture>, AppError> {
+    pub async fn get_textures_by_type(&self, tex_type: TextureType) -> Result<Vec<Texture>, AppError> {
         let tex_type: String = tex_type.into();
         let textures = sqlx::query_as!(
             Texture,

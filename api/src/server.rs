@@ -3,7 +3,7 @@ use dioxus::fullstack::response::{IntoResponse, Response};
 use dioxus::server::axum::routing::get;
 use dioxus::{prelude::*, server::axum::Router};
 
-use crate::{db, Blob, SkinType};
+use crate::{db, Blob, TextureType};
 
 pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
     use crate::auth::*;
@@ -36,20 +36,20 @@ pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
 }
 
 pub async fn get_skin(Path(user_name): Path<String>) -> Response {
-    get_tex(user_name, SkinType::Skin)
+    get_tex(user_name, TextureType::Skin)
         .await
         .unwrap()
         .into_response()
 }
 
 async fn get_cape(Path(user_name): Path<String>) -> Response {
-    get_tex(user_name, SkinType::Cape)
+    get_tex(user_name, TextureType::Cape)
         .await
         .unwrap()
         .into_response()
 }
 
-async fn get_tex(user_name: String, texture_type: SkinType) -> Result<Blob> {
+async fn get_tex(user_name: String, texture_type: TextureType) -> Result<Blob> {
     let database = db::get_db().await;
 
     let user_name = std::path::Path::new(user_name.as_str())

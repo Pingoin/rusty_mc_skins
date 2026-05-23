@@ -1,4 +1,4 @@
-use api::{get_texture_by_id, Blob, SkinType, Texture};
+use api::{Blob, Texture, TextureType, get_texture_by_id};
 use dioxus::prelude::*;
 use rfd::AsyncFileDialog;
 
@@ -33,10 +33,10 @@ pub fn TextureEdit(id: String) -> Element {
                 onchange: move |e| {
                     let mut t = texture.read().clone();
                     t.texture_type = match e.value().as_str() {
-                        "Skin" => SkinType::Skin,
-                        "Cape" => SkinType::Cape,
-                        "Elytra" => SkinType::Elytra,
-                        _ => SkinType::Skin,
+                        "Skin" => TextureType::Skin,
+                        "Cape" => TextureType::Cape,
+                        "Elytra" => TextureType::Elytra,
+                        _ => TextureType::Skin,
                     };
                     texture.set(t);
                 },
@@ -71,7 +71,9 @@ pub fn TextureEdit(id: String) -> Element {
                         let nav = navigator();
                         let t = texture.read().clone();
                         api::create_texture(t).await.unwrap();
-                        nav.push(Route::TextureList {});
+                        nav.push(Route::TextureList {
+                            tex_type: api::TextureType::Skin,
+                        });
                     }
                 },
                 "Save"
@@ -82,7 +84,9 @@ pub fn TextureEdit(id: String) -> Element {
                         let nav = navigator();
                         let t = texture.read().clone();
                         api::del_texture_by_id(t.id).await.unwrap();
-                        nav.push(Route::TextureList {});
+                        nav.push(Route::TextureList {
+                            tex_type: api::TextureType::Skin,
+                        });
                     }
                 },
                 "delete"

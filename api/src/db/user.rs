@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{app_error::AppError, SkinType};
+use crate::{app_error::AppError, TextureType};
 use crate::{Blob, User};
 #[cfg(feature = "server")]
 use argon2::{
@@ -93,19 +93,47 @@ impl Db {
         Ok(user)
     }
 
+    pub(crate) async fn set_texture(
+        &self,
+        user_id: String,
+        texture_id: Option<String>,
+        texture_type: TextureType,
+    ) -> anyhow::Result<()> {
+        dbg!(&user_id);
+        dbg!(&texture_id);
+        dbg!(&texture_type);
+
+        let tex_id=if let Some(tex)=texture_id{
+            format!("'{}'",tex)
+        }else{
+            "NULL".to_string()
+        };
+
+        let query=format!("UPDATE users
+                    SET selected_{}_id = {}
+                    WHERE users.id = '{}';",texture_type.to_string().to_ascii_lowercase(),tex_id,user_id);
+        dbg!(&query);
+
+        let bla=sqlx::query(&query).execute(&self.pool).await?;
+
+
+        dbg!(bla);
+        Ok(())
+    }
+
     pub async fn get_skin(
         &self,
         user_name: String,
-        texture_type: SkinType,
+        texture_type: TextureType,
     ) -> Result<Option<Blob>, AppError> {
         let tex: String = texture_type.clone().into();
 
         let row = match texture_type.clone(){
-                SkinType::Skin =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_skin_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
+                TextureType::Skin =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_skin_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
             .await?.map(|row| row.image_data),
-                SkinType::Cape => sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_cape_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
+                TextureType::Cape => sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_cape_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
             .await?.map(|row| row.image_data),
-                SkinType::Elytra =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_elytra_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex).fetch_optional(&self.pool).await?.map(|row| row.image_data),
+                TextureType::Elytra =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_elytra_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex).fetch_optional(&self.pool).await?.map(|row| row.image_data),
             };
 
         Ok(row.map(|data| Blob(data)))

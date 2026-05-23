@@ -1,34 +1,68 @@
-use api::get_textures;
+use api::{Texture, TextureType, User, get_me, get_textures, set_texture};
 use dioxus::prelude::*;
 
-use crate::views::Route;
-
 #[component]
-pub fn TextureList() -> Element {
+pub fn TextureList(tex_type: TextureType) -> Element {
     let textures = use_resource(|| async move { get_textures().await.unwrap_or_default() });
+    let user = use_resource(|| async move { get_me().await.ok() });
+
     rsx! {
 
-        article {
+        article { class: "",
             h1 { "Texture List" }
-            ul { class: "list bg-base-100 rounded-box shadow-md",
+            div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8",
                 for texture in textures.cloned().unwrap_or_default() {
-                    li { class: "list-row",
+                    TextureCard { texture, user_res: user.clone() }
+                }
+            }
+        }
+    }
+}
 
-                        img {
-                            src: "data:image/png;base64,{texture.get_preview().unwrap_or_default().as_base64()}",
-                            width: "100",
-                        }
-                        "{texture.skin_name}"
+#[component]
+fn TextureCard(texture: Texture, user_res:Resource<Option<User>>) -> Element {
+    let user = user_res.cloned().flatten();
+
+    let is_set = match user {
+        Some(user) => match texture.texture_type {
+            TextureType::Skin => user.selected_skin_id == Some(texture.id.clone()),
+            TextureType::Cape => user.selected_cape_id == Some(texture.id.clone()),
+            TextureType::Elytra => user.selected_elytra_id == Some(texture.id.clone()),
+        },
+        None => false,
+    };
+
+    let set_me=set_texture;
+    let me=use_signal(||texture.clone());
+
+    rsx! {
+        div { class: "indicator",
+            {
+                if is_set {
+                    rsx! {
+                        span { class: "indicator-item badge badge-primary", "Me" }
+                    }
+                } else {
+                    rsx! {}
+                }
+            }
+            div { class: "card bg-base-100 w-96 shadow-sm",
+                figure {
+                    img {
+                        alt: "Shoes",
+                        src: "data:image/png;base64,{texture.get_preview().unwrap_or_default().as_base64()}",
+                    }
+                }
+                div { class: "card-body",
+                    h2 { class: "card-title", {texture.skin_name.clone()} }
+                    div { class: "card-actions justify-end",
                         button {
                             class: "btn btn-primary",
-                            onclick: move |_| {
-                                let texture = texture.clone();
-                                let nav = navigator();
-                                nav.push(Route::TextureEdit {
-                                    id: texture.clone().id.clone(),
-                                });
+                            onclick: move |_| async move {
+                                let _ = set_me(me()).await;
+                                user_res.set(Some(get_me().await.ok()));
                             },
-                            "edit"
+                            "Apply to me"
                         }
                     }
                 }

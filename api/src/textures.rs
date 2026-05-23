@@ -8,6 +8,9 @@ use image::imageops::{overlay, replace};
 use image::{DynamicImage, GenericImageView, RgbaImage};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::string::ToString;
+
+
 
 #[cfg(feature="server")]
 use crate::auth;
@@ -46,15 +49,15 @@ pub async fn del_texture_by_id(id: String) -> Result<()> {
 }
 
 #[get("/api/texture/my/{tex_type}", auth: auth::Session)]
-pub async fn get_my_texture_type(tex_type:SkinType) -> Result<Texture> {
+pub async fn get_my_texture_type(tex_type:TextureType) -> Result<Texture> {
     let id= auth.id;
 
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
     let textures = match tex_type{
-        SkinType::Skin => database.get_skin_by_user_id(id).await?,
-        SkinType::Cape => database.get_cape_by_user_id(id).await?,
-        SkinType::Elytra => database.get_elytra_by_user_id(id).await?,
+        TextureType::Skin => database.get_skin_by_user_id(id).await?,
+        TextureType::Cape => database.get_cape_by_user_id(id).await?,
+        TextureType::Elytra => database.get_elytra_by_user_id(id).await?,
     };
     Ok(textures)
 }
@@ -66,15 +69,15 @@ pub async fn get_textures_by_type(tex_type: String) -> Result<Vec<Texture>> {
     Ok(tex)
 }
 
-#[derive(Debug, Deserialize, Clone, strum_macros::Display,Default, Serialize)]
-pub enum SkinType {
+#[derive(Debug, Deserialize, Clone, PartialEq,strum_macros::Display,strum_macros::EnumString,Default, Serialize)]
+pub enum TextureType {
     #[default]
     Skin,
     Cape,
     Elytra,
 }
 
-impl From<String> for SkinType {
+impl From<String> for TextureType {
     fn from(value: String) -> Self {
         match value.as_str() {
             "Skin" => Self::Skin,
@@ -85,22 +88,22 @@ impl From<String> for SkinType {
     }
 }
 
-impl Into<String> for SkinType {
+impl Into<String> for TextureType {
     fn into(self) -> String {
         match self {
-            SkinType::Skin => "Skin",
-            SkinType::Cape => "Cape",
-            SkinType::Elytra => "Elytra",
+            TextureType::Skin => "Skin",
+            TextureType::Cape => "Cape",
+            TextureType::Elytra => "Elytra",
         }
         .to_string()
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, Default)]
+#[derive(Debug, Deserialize, Clone, Serialize, PartialEq, Default)]
 pub struct Texture {
     pub id: String,
     pub skin_name: String,
-    pub texture_type: SkinType,
+    pub texture_type: TextureType,
     pub image_data: Blob,
 }
 
@@ -296,7 +299,7 @@ impl Texture {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Blob(pub Vec<u8>);
 
 impl Blob {
