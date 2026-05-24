@@ -1,4 +1,3 @@
-use std::io::Cursor;
 use base64::prelude::*;
 use dioxus::fullstack::body::Body;
 use dioxus::fullstack::response::{IntoResponse, Response};
@@ -8,11 +7,10 @@ use image::imageops::{overlay, replace};
 use image::{DynamicImage, GenericImageView, RgbaImage};
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::io::Cursor;
 use std::string::ToString;
 
-
-
-#[cfg(feature="server")]
+#[cfg(feature = "server")]
 use crate::auth;
 #[cfg(feature = "server")]
 use crate::db;
@@ -49,12 +47,12 @@ pub async fn del_texture_by_id(id: String) -> Result<()> {
 }
 
 #[get("/api/texture/my/{tex_type}", auth: auth::Session)]
-pub async fn get_my_texture_type(tex_type:TextureType) -> Result<Texture> {
-    let id= auth.id;
+pub async fn get_my_texture_type(tex_type: TextureType) -> Result<Texture> {
+    let id = auth.id;
 
     // Optionally, retrieve user data from the database
     let database = db::get_db().await;
-    let textures = match tex_type{
+    let textures = match tex_type {
         TextureType::Skin => database.get_skin_by_user_id(id).await?,
         TextureType::Cape => database.get_cape_by_user_id(id).await?,
         TextureType::Elytra => database.get_elytra_by_user_id(id).await?,
@@ -69,7 +67,17 @@ pub async fn get_textures_by_type(tex_type: String) -> Result<Vec<Texture>> {
     Ok(tex)
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq,strum_macros::Display,strum_macros::EnumString,Default, Serialize)]
+#[derive(
+    Debug,
+    Deserialize,
+    Clone,
+    Copy,
+    PartialEq,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    Default,
+    Serialize,
+)]
 pub enum TextureType {
     #[default]
     Skin,
@@ -137,154 +145,158 @@ impl Texture {
         )?
         .to_rgba8();
 
-        let factor = img.width() / 64;
-        let ratio = img.width() / img.height();
-
-        let mut output = RgbaImage::new(18 * factor, 34 * factor);
-        if ratio == 1 {
-            // Base Skin
-            let head = img
-                .view(8 * factor, 8 * factor, 8 * factor, 8 * factor)
-                .to_image();
-            let left_leg = img
-                .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let right_leg = img
-                .view(20 * factor, 52 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let left_arm = img
-                .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let right_arm = img
-                .view(36 * factor, 52 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let body = img
-                .view(20 * factor, 20 * factor, 8 * factor, 12 * factor)
-                .to_image();
-            replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-            replace(
-                &mut output,
-                &left_leg,
-                (4 * factor).into(),
-                (20 * factor).into(),
-            );
-            replace(
-                &mut output,
-                &right_leg,
-                (8 * factor).into(),
-                (20 * factor).into(),
-            );
-            replace(
-                &mut output,
-                &left_arm,
-                (0 * factor).into(),
-                (8 * factor).into(),
-            );
-            replace(
-                &mut output,
-                &right_arm,
-                (12 * factor).into(),
-                (8 * factor).into(),
-            );
-            replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
-
-            // Top layer
-            let head = img
-                .view(40 * factor, 8 * factor, 8 * factor, 8 * factor)
-                .to_image();
-            let left_leg = img
-                .view(4 * factor, 36 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let right_leg = img
-                .view(4 * factor, 52 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let left_arm = img
-                .view(44 * factor, 36 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let right_arm = img
-                .view(52 * factor, 52 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let body = img
-                .view(20 * factor, 36 * factor, 8 * factor, 12 * factor)
-                .to_image();
-            overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-            overlay(
-                &mut output,
-                &left_leg,
-                (4 * factor).into(),
-                (20 * factor).into(),
-            );
-            overlay(
-                &mut output,
-                &right_leg,
-                (8 * factor).into(),
-                (20 * factor).into(),
-            );
-            overlay(
-                &mut output,
-                &left_arm,
-                (0 * factor).into(),
-                (8 * factor).into(),
-            );
-            overlay(
-                &mut output,
-                &right_arm,
-                (12 * factor).into(),
-                (8 * factor).into(),
-            );
-            overlay(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+        let output = if self.texture_type != TextureType::Skin {
+            img
         } else {
-            let head = img
-                .view(8 * factor, 8 * factor, 8 * factor, 8 * factor)
-                .to_image();
-            let left_leg = img
-                .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let right_leg = img
-                .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let left_arm = img
-                .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let right_arm = img
-                .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
-                .to_image();
-            let body = img
-                .view(20 * factor, 20 * factor, 8 * factor, 12 * factor)
-                .to_image();
-            replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-            replace(
-                &mut output,
-                &left_leg,
-                (4 * factor).into(),
-                (20 * factor).into(),
-            );
-            replace(
-                &mut output,
-                &right_leg,
-                (8 * factor).into(),
-                (20 * factor).into(),
-            );
-            replace(
-                &mut output,
-                &left_arm,
-                (0 * factor).into(),
-                (8 * factor).into(),
-            );
-            replace(
-                &mut output,
-                &right_arm,
-                (12 * factor).into(),
-                (8 * factor).into(),
-            );
-            replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+            let factor = img.width() / 64;
+            let ratio = img.width() / img.height();
 
-            let head = img
-                .view(40 * factor, 8 * factor, 8 * factor, 8 * factor)
-                .to_image();
-            overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
-        }
+            let mut output = RgbaImage::new(18 * factor, 34 * factor);
+            if ratio == 1 {
+                // Base Skin
+                let head = img
+                    .view(8 * factor, 8 * factor, 8 * factor, 8 * factor)
+                    .to_image();
+                let left_leg = img
+                    .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let right_leg = img
+                    .view(20 * factor, 52 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let left_arm = img
+                    .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let right_arm = img
+                    .view(36 * factor, 52 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let body = img
+                    .view(20 * factor, 20 * factor, 8 * factor, 12 * factor)
+                    .to_image();
+                replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+                replace(
+                    &mut output,
+                    &left_leg,
+                    (4 * factor).into(),
+                    (20 * factor).into(),
+                );
+                replace(
+                    &mut output,
+                    &right_leg,
+                    (8 * factor).into(),
+                    (20 * factor).into(),
+                );
+                replace(
+                    &mut output,
+                    &left_arm,
+                    (0 * factor).into(),
+                    (8 * factor).into(),
+                );
+                replace(
+                    &mut output,
+                    &right_arm,
+                    (12 * factor).into(),
+                    (8 * factor).into(),
+                );
+                replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
 
+                // Top layer
+                let head = img
+                    .view(40 * factor, 8 * factor, 8 * factor, 8 * factor)
+                    .to_image();
+                let left_leg = img
+                    .view(4 * factor, 36 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let right_leg = img
+                    .view(4 * factor, 52 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let left_arm = img
+                    .view(44 * factor, 36 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let right_arm = img
+                    .view(52 * factor, 52 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let body = img
+                    .view(20 * factor, 36 * factor, 8 * factor, 12 * factor)
+                    .to_image();
+                overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+                overlay(
+                    &mut output,
+                    &left_leg,
+                    (4 * factor).into(),
+                    (20 * factor).into(),
+                );
+                overlay(
+                    &mut output,
+                    &right_leg,
+                    (8 * factor).into(),
+                    (20 * factor).into(),
+                );
+                overlay(
+                    &mut output,
+                    &left_arm,
+                    (0 * factor).into(),
+                    (8 * factor).into(),
+                );
+                overlay(
+                    &mut output,
+                    &right_arm,
+                    (12 * factor).into(),
+                    (8 * factor).into(),
+                );
+                overlay(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+            } else {
+                let head = img
+                    .view(8 * factor, 8 * factor, 8 * factor, 8 * factor)
+                    .to_image();
+                let left_leg = img
+                    .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let right_leg = img
+                    .view(4 * factor, 20 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let left_arm = img
+                    .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let right_arm = img
+                    .view(44 * factor, 20 * factor, 4 * factor, 12 * factor)
+                    .to_image();
+                let body = img
+                    .view(20 * factor, 20 * factor, 8 * factor, 12 * factor)
+                    .to_image();
+                replace(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+                replace(
+                    &mut output,
+                    &left_leg,
+                    (4 * factor).into(),
+                    (20 * factor).into(),
+                );
+                replace(
+                    &mut output,
+                    &right_leg,
+                    (8 * factor).into(),
+                    (20 * factor).into(),
+                );
+                replace(
+                    &mut output,
+                    &left_arm,
+                    (0 * factor).into(),
+                    (8 * factor).into(),
+                );
+                replace(
+                    &mut output,
+                    &right_arm,
+                    (12 * factor).into(),
+                    (8 * factor).into(),
+                );
+                replace(&mut output, &body, (4 * factor).into(), (8 * factor).into());
+
+                let head = img
+                    .view(40 * factor, 8 * factor, 8 * factor, 8 * factor)
+                    .to_image();
+                overlay(&mut output, &head, (4 * factor).into(), (0 * factor).into());
+            }
+            output
+        };
         let mut buf = Vec::new();
         let mut cursor = Cursor::new(&mut buf);
 
@@ -347,5 +359,3 @@ impl IntoResponse for Blob {
             .unwrap()
     }
 }
-
-

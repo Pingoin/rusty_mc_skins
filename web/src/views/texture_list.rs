@@ -3,7 +3,14 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn TextureList(tex_type: TextureType) -> Element {
-    let textures = use_resource(|| async move { get_textures().await.unwrap_or_default() });
+    let textures = use_resource(use_reactive!(|tex_type| async move {
+        get_textures()
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|t| tex_type == t.texture_type)
+            .collect::<Vec<Texture>>()
+    }));
     let user = use_resource(|| async move { get_me().await.ok() });
 
     rsx! {
@@ -49,6 +56,7 @@ fn TextureCard(texture: Texture, user_res:Resource<Option<User>>) -> Element {
             div { class: "card bg-base-100 w-96 shadow-sm",
                 figure {
                     img {
+                        class: "w-48",
                         alt: "Shoes",
                         src: "data:image/png;base64,{texture.get_preview().unwrap_or_default().as_base64()}",
                     }
