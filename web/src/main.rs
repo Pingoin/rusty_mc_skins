@@ -16,9 +16,6 @@ fn main() {
     dioxus::serve(|| async move {
         // Create a new router for our app using the `router` function
         let router=api::get_router(App).await?;
-        
-        // .. customize the router, adding layers and new routes
-
         // And then return the router
         Ok(router)
     });
@@ -53,6 +50,6 @@ fn WebNavbar() -> Element {
         Navbar { NavItems {} }
         main { Outlet::<Route> {} }
 
-        footer {}
+        footer { "test" }
     }
 }

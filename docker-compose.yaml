@@ -1,0 +1,8 @@
+services:
+  rusty_mc_skins:
+    image: pingoin/rusty_mc_skins:latest
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./data:/usr/local/app/data

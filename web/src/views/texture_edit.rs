@@ -1,5 +1,6 @@
 use api::{Blob, Texture, TextureType, get_texture_by_id};
 use dioxus::prelude::*;
+#[cfg(feature = "web")]
 use rfd::AsyncFileDialog;
 
 use crate::views::Route;
@@ -16,6 +17,23 @@ pub fn TextureEdit(id: String) -> Element {
             texture.set(t);
         });
     }
+    #[cfg(feature = "web")]
+    let file_handle=move |_| {
+                    async move {
+                        let file = AsyncFileDialog::new()
+                            .add_filter("Textures", &["png"])
+                            .set_directory("/")
+                            .pick_file()
+                            .await;
+                        let data = Blob(file.unwrap().read().await);
+                        let mut t = texture.read().clone();
+                        t.image_data = data;
+                        texture.set(t);
+                    }
+                };
+                #[cfg(not(feature = "web"))]
+                let file_handle= move |_| {
+                    async move {}};
 
     rsx! {
         article {
@@ -44,22 +62,7 @@ pub fn TextureEdit(id: String) -> Element {
                 option { value: "Cape", "Cape" }
                 option { value: "Elytra", "Elytra" }
             }
-            button {
-                onclick: move |_| {
-                    async move {
-                        let file = AsyncFileDialog::new()
-                            .add_filter("Textures", &["png"])
-                            .set_directory("/")
-                            .pick_file()
-                            .await;
-                        let data = Blob(file.unwrap().read().await);
-                        let mut t = texture.read().clone();
-                        t.image_data = data;
-                        texture.set(t);
-                    }
-                },
-                "Pick Texture"
-            }
+            button { onclick: file_handle, "Pick Texture" }
 
             img {
                 src: "data:image/png;base64,{texture.read().get_preview().unwrap_or_default().as_base64()}",

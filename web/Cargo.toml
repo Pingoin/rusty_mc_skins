@@ -9,9 +9,9 @@ api = { workspace = true }
 tokio = { workspace = true, features = ["full"], optional = true }
 serde = { workspace = true, features = ["derive"]}
 strum = { workspace = true }
-rfd = { workspace = true }
+rfd = { workspace = true, optional = true}
 
 [features]
 default = []
-web = ["dioxus/web"]
+web = ["dioxus/web", "dep:rfd"]
 server = ["dioxus/server", "dep:tokio","api/server"]

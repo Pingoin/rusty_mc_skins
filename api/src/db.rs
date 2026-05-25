@@ -1,5 +1,6 @@
 use sqlx::SqlitePool;
 use tokio::sync::OnceCell;
+use tokio::fs::create_dir_all;
 mod textures;
 mod user;
 mod groups;
@@ -19,7 +20,9 @@ pub struct Db {
 
 impl Db {
     pub async fn new() -> anyhow::Result<Self> {
-        let pool = SqlitePool::connect("sqlite://mcss.sqlite?mode=rwc").await?;
+        create_dir_all("data").await?;
+
+        let pool = SqlitePool::connect("sqlite://data/mcss.sqlite?mode=rwc").await?;
         sqlx::migrate!("../migrations").run(&pool).await?;
         Ok(Self { pool })
     }
