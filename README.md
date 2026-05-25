@@ -1,5 +1,7 @@
 # Development
 
+[![Build image](https://github.com/Pingoin/rusty_mc_skins/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Pingoin/rusty_mc_skins/actions/workflows/docker-image.yml)
+
 Your new workspace contains a member crate for each of the web, desktop and mobile platforms, a `ui` crate for shared components and a `api` crate for shared backend logic:
 
 ```
