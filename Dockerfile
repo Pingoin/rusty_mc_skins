@@ -7,6 +7,9 @@ RUN cargo binstall dioxus-cli --root /.cargo -y --force
 ENV PATH="/.cargo/bin:$PATH"
 
 COPY . .
+
+RUN cd web && curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.mjs
+RUN cd web && curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.mjs
 # Create the final bundle folder. Bundle with release build profile to enable optimizations.
 RUN dx bundle --web --release
 
