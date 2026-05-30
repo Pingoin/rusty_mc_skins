@@ -21,4 +21,4 @@ docker-login:
     docker login
 
 docker:
-    docker buildx build --platform linux/amd64 -t pingoin/rusty_mc_skins:latest --push .
+    docker buildx build --platform linux/amd64 -t pingoin/rusty_mc_skins:latest .
