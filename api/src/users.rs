@@ -1,11 +1,24 @@
+use crate::Permissions;
 use crate::Texture;
 #[cfg(feature = "server")]
 use crate::auth;
 #[cfg(feature = "server")]
 use crate::db;
 
-use super::User;
 use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Clone, Default, PartialEq, Serialize)]
+pub struct User {
+    pub id: String,
+    pub username: String,
+    pub selected_skin_id: Option<String>,
+    pub selected_cape_id: Option<String>,
+    pub selected_elytra_id: Option<String>,
+    pub anonymous: bool,
+    pub permissions: Permissions,
+    pub created: Option<String>,
+}
 
 #[post("/api/user/create")]
 pub async fn create_user(user: User, password: String) -> Result<User> {
@@ -17,18 +30,22 @@ pub async fn create_user(user: User, password: String) -> Result<User> {
 }
 
 #[post("/api/user/texture/set", auth: auth::Session)]
-pub async fn set_texture(texture:Texture, )->Result<()>{
+pub async fn set_texture(texture: Texture) -> Result<()> {
     let database = db::get_db().await;
-    if let Some(user) = auth.clone().current_user && !user.anonymous {
-        
-        if texture.id=="".to_string(){
-            database.set_texture(user.id.clone(), None, texture.texture_type).await?;
-        }else{
-            database.set_texture(user.id.clone(), Some(texture.id), texture.texture_type).await?;
+    if let Some(user) = auth.clone().current_user
+        && !user.anonymous
+    {
+        if texture.id == "".to_string() {
+            database
+                .set_texture(user.id.clone(), None, texture.texture_type)
+                .await?;
+        } else {
+            database
+                .set_texture(user.id.clone(), Some(texture.id), texture.texture_type)
+                .await?;
         }
         auth.cache_clear_user(user.id);
     }
-    
 
     Ok(())
 }

@@ -1,6 +1,6 @@
 use sqlx::query;
 
-use crate::{app_error::AppError, Blob, TextureType, Texture};
+use crate::{Blob, Texture, TextureType, app_error::AppError};
 
 use super::Db;
 
@@ -62,35 +62,43 @@ impl Db {
     }
 
     pub async fn get_skin_by_user_id(&self, id: String) -> Result<Texture, AppError> {
-        let texture = sqlx::query_as!(Texture, 
+        let texture = sqlx::query_as!(
+            Texture,
             "SELECT textures.id AS id,skin_name,texture_type,image_data 
             FROM users INNER JOIN textures 
             ON textures.id = users.selected_skin_id 
-            WHERE users.id = ? ", id)
-            .fetch_one(&self.pool)
-            .await?;
+            WHERE users.id = ? ",
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
         Ok(texture)
     }
-
     pub async fn get_cape_by_user_id(&self, id: String) -> Result<Texture, AppError> {
-        let texture = sqlx::query_as!(Texture, 
+        let texture = sqlx::query_as!(
+            Texture,
             "SELECT textures.id AS id,skin_name,texture_type,image_data 
             FROM users INNER JOIN textures 
             ON textures.id = users.selected_cape_id 
-            WHERE users.id = ? ", id)
-            .fetch_one(&self.pool)
-            .await?;
+            WHERE users.id = ? ",
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
         Ok(texture)
     }
 
     pub async fn get_elytra_by_user_id(&self, id: String) -> Result<Texture, AppError> {
-        let texture = sqlx::query_as!(Texture, 
+        let texture = sqlx::query_as!(
+            Texture,
             "SELECT textures.id AS id,skin_name,texture_type,image_data 
             FROM users INNER JOIN textures 
             ON textures.id = users.selected_elytra_id 
-            WHERE users.id = ? ", id)
-            .fetch_one(&self.pool)
-            .await?;
+            WHERE users.id = ? ",
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
         Ok(texture)
     }
 
@@ -101,7 +109,10 @@ impl Db {
         Ok(())
     }
 
-    pub async fn get_textures_by_type(&self, tex_type: TextureType) -> Result<Vec<Texture>, AppError> {
+    pub async fn get_textures_by_type(
+        &self,
+        tex_type: TextureType,
+    ) -> Result<Vec<Texture>, AppError> {
         let tex_type: String = tex_type.into();
         let textures = sqlx::query_as!(
             Texture,

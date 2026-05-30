@@ -1,7 +1,6 @@
 use crate::views::Route;
-use api::{get_group_by_id, get_users, Group, Permission, User};
+use api::{Group, Permissions, User, get_group_by_id, get_users};
 use dioxus::prelude::*;
-use strum::IntoEnumIterator;
 
 #[component]
 pub fn GroupEdit(id: String) -> Element {
@@ -30,18 +29,17 @@ pub fn GroupEdit(id: String) -> Element {
                 },
             }
             div {
-                for permission in Permission::iter() {
+                for permission in Permissions::all().iter() {
                     input {
                         r#type: "checkbox",
-                        checked: "{group.read().permissions.has_permission(permission.clone())}",
+                        checked: "{group.read().permissions.contains(permission.clone())}",
                         onchange: move |val| {
                             let mut t = group.read().clone();
-                            t.permissions
-                                .set_permission(permission.clone(), val.value() == "true".to_string());
+                            t.permissions.set(permission.clone(), val.value() == "true".to_string());
                             group.set(t);
                         },
                     }
-                    label { "{permission.as_ref()}" }
+                    label { "{permission.to_str()}" }
                     br {}
                 }
             }

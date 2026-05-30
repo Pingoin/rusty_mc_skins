@@ -1,8 +1,17 @@
+use crate::Permissions;
 #[cfg(feature = "server")]
 use crate::db;
 
-use super::Group;
 use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Clone, PartialEq, Default, Serialize)]
+pub struct Group {
+    pub id: String,
+    pub group_name: String,
+    pub permissions: Permissions,
+    pub created: Option<String>,
+}
 
 #[post("/api/group/create")]
 pub async fn create_group(group: Group) -> Result<Group> {
@@ -19,7 +28,6 @@ pub async fn get_groups() -> Result<Vec<Group>> {
     let groups = database.get_groups().await?;
     Ok(groups)
 }
-
 
 #[get("/api/group/{id}")]
 pub async fn get_group_by_id(id: String) -> Result<Group> {

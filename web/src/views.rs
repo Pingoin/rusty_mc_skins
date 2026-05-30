@@ -2,21 +2,21 @@ use api::TextureType;
 use dioxus::prelude::*;
 
 use crate::WebNavbar;
+mod group_edit;
+mod group_list;
 mod home;
 mod texture_edit;
 mod texture_list;
 mod user_edit;
 mod user_list;
-mod group_list;
-mod group_edit;
 
+use group_edit::GroupEdit;
+use group_list::GroupList;
 use home::Home;
 use texture_edit::TextureEdit;
 use texture_list::TextureList;
 use user_edit::UserEdit;
 use user_list::UserList;
-use group_edit::GroupEdit;
-use group_list::GroupList;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]

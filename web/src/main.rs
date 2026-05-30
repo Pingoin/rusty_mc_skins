@@ -9,13 +9,12 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
 //const MAIN_CSS: Asset = asset!("/assets/main.scss");
 
-
 fn main() {
     // Run `serve()` on the server only
     #[cfg(feature = "server")]
     dioxus::serve(|| async move {
         // Create a new router for our app using the `router` function
-        let router=api::get_router(App).await?;
+        let router = api::get_router(App).await?;
         // And then return the router
         Ok(router)
     });

@@ -18,22 +18,19 @@ pub fn TextureEdit(id: String) -> Element {
         });
     }
     #[cfg(feature = "web")]
-    let file_handle=move |_| {
-                    async move {
-                        let file = AsyncFileDialog::new()
-                            .add_filter("Textures", &["png"])
-                            .set_directory("/")
-                            .pick_file()
-                            .await;
-                        let data = Blob(file.unwrap().read().await);
-                        let mut t = texture.read().clone();
-                        t.image_data = data;
-                        texture.set(t);
-                    }
-                };
-                #[cfg(not(feature = "web"))]
-                let file_handle= move |_| {
-                    async move {}};
+    let file_handle = move |_| async move {
+        let file = AsyncFileDialog::new()
+            .add_filter("Textures", &["png"])
+            .set_directory("/")
+            .pick_file()
+            .await;
+        let data = Blob(file.unwrap().read().await);
+        let mut t = texture.read().clone();
+        t.image_data = data;
+        texture.set(t);
+    };
+    #[cfg(not(feature = "web"))]
+    let file_handle = move |_| async move {};
 
     rsx! {
         article {

@@ -1,14 +1,12 @@
-use std::collections::HashSet;
-
-use crate::{app_error::AppError, TextureType};
-use crate::{Blob, User};
+use crate::{Blob, Permissions, User};
+use crate::{TextureType, app_error::AppError};
 #[cfg(feature = "server")]
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
+    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 use argon2::{PasswordHash, PasswordVerifier};
-use sqlx::query;
+use sqlx::{QueryBuilder, query};
 
 use super::Db;
 
@@ -40,11 +38,20 @@ impl Db {
                 selected_cape_id: row.selected_cape_id,
                 selected_elytra_id: row.selected_elytra_id,
                 anonymous: false,
-                permissions: HashSet::new(),
+                permissions: Permissions::empty(),
+                created: None,
             })
             .collect();
 
         Ok(users)
+    }
+
+    pub async fn get_user_count(&self) -> Result<i64, AppError> {
+        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users")
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(count)
     }
 
     pub async fn get_user_by_id(&self, id: String) -> Result<User, AppError> {
@@ -69,6 +76,8 @@ impl Db {
     }
 
     pub async fn add_user(&self, mut user: User, password: String) -> Result<User, AppError> {
+        let count = self.get_user_count().await?;
+
         let id = if user.id.len() > 0 {
             user.id.clone()
         } else {
@@ -89,7 +98,22 @@ impl Db {
         )
         .execute(&self.pool)
         .await?;
-        user.id = id;
+        user.id = id.clone();
+
+        let mut groups = vec![(id.clone(), "usr")];
+        if count==0{
+            groups.push((id.clone(),"adm"));
+            groups.push((id.clone(),"crtr"));
+        }
+
+        let mut qb = QueryBuilder::new("INSERT OR REPLACE INTO groups_users (user_id, group_id) ");
+
+        qb.push_values(groups.iter(), |mut b, group| {
+            b.push_bind(group.1).push_bind(group.0.clone());
+        });
+
+        qb.build().execute(&self.pool).await?;
+
         Ok(user)
     }
 
@@ -99,25 +123,18 @@ impl Db {
         texture_id: Option<String>,
         texture_type: TextureType,
     ) -> anyhow::Result<()> {
-        dbg!(&user_id);
-        dbg!(&texture_id);
-        dbg!(&texture_type);
-
-        let tex_id=if let Some(tex)=texture_id{
-            format!("'{}'",tex)
-        }else{
-            "NULL".to_string()
+        let sql = match texture_type {
+            TextureType::Skin => "UPDATE users SET selected_skin_id = ? WHERE users.id = ?;",
+            TextureType::Cape => "UPDATE users SET selected_cape_id = ? WHERE users.id = ?;",
+            TextureType::Elytra => "UPDATE users SET selected_elytra_id = ? WHERE users.id = ?;",
         };
 
-        let query=format!("UPDATE users
-                    SET selected_{}_id = {}
-                    WHERE users.id = '{}';",texture_type.to_string().to_ascii_lowercase(),tex_id,user_id);
-        dbg!(&query);
+        sqlx::query(sql)
+            .bind(texture_id)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
 
-        let bla=sqlx::query(&query).execute(&self.pool).await?;
-
-
-        dbg!(bla);
         Ok(())
     }
 
@@ -129,11 +146,12 @@ impl Db {
         let tex: String = texture_type.clone().into();
 
         let row = match texture_type.clone(){
-                TextureType::Skin =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_skin_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
-            .await?.map(|row| row.image_data),
-                TextureType::Cape => sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_cape_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            .fetch_optional(&self.pool)
-            .await?.map(|row| row.image_data),
-                TextureType::Elytra =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_elytra_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex).fetch_optional(&self.pool).await?.map(|row| row.image_data),
+                TextureType::Skin =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_skin_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            
+                .fetch_optional(&self.pool).await?.map(|row| row.image_data),
+                TextureType::Cape => sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_cape_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)            
+                .fetch_optional(&self.pool).await?.map(|row| row.image_data),
+                TextureType::Elytra =>  sqlx::query!("SELECT t.image_data FROM users u JOIN textures t ON t.id = u.selected_elytra_id WHERE u.username = ?1 AND t.texture_type = ?2;", user_name,tex)
+                .fetch_optional(&self.pool).await?.map(|row| row.image_data),
             };
 
         Ok(row.map(|data| Blob(data)))
@@ -147,6 +165,7 @@ pub(crate) struct DbUser {
     selected_cape_id: Option<String>,
     selected_elytra_id: Option<String>,
     password_hash: String,
+    created: Option<String>,
 }
 
 impl DbUser {
@@ -169,7 +188,8 @@ impl Into<User> for DbUser {
             selected_cape_id: self.selected_cape_id,
             selected_elytra_id: self.selected_elytra_id,
             anonymous: false,
-            permissions: HashSet::new(),
+            permissions: Permissions::empty(),
+            created: self.created,
         }
     }
 }

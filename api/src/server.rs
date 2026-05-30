@@ -3,7 +3,7 @@ use dioxus::fullstack::response::{IntoResponse, Response};
 use dioxus::server::axum::routing::get;
 use dioxus::{prelude::*, server::axum::Router};
 
-use crate::{db, Blob, TextureType};
+use crate::{Blob, TextureType, db};
 
 pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
     use crate::auth::*;

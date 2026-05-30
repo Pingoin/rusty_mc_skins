@@ -27,7 +27,7 @@ pub fn TextureList(tex_type: TextureType) -> Element {
 }
 
 #[component]
-fn TextureCard(texture: Texture, user_res:Resource<Option<User>>) -> Element {
+fn TextureCard(texture: Texture, user_res: Resource<Option<User>>) -> Element {
     let user = user_res.cloned().flatten();
 
     let is_set = match user {
@@ -39,8 +39,8 @@ fn TextureCard(texture: Texture, user_res:Resource<Option<User>>) -> Element {
         None => false,
     };
 
-    let set_me=set_texture;
-    let me=use_signal(||texture.clone());
+    let set_me = set_texture;
+    let me = use_signal(|| texture.clone());
 
     rsx! {
         div { class: "indicator",

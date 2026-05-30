@@ -5,7 +5,7 @@ db-migrate:
     sqlx migrate run
 
 db-create-migration name:
-    sqlx migrate add -r {{name}}
+    sqlx migrate add {{name}}
 
 serve: init
     cd web && dx serve

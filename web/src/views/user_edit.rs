@@ -1,4 +1,4 @@
-use api::{get_textures_by_type, get_user_by_id, TextureType, User};
+use api::{TextureType, User, get_textures_by_type, get_user_by_id};
 use dioxus::prelude::*;
 
 use crate::views::Route;
@@ -6,7 +6,7 @@ use crate::views::Route;
 #[component]
 pub fn UserEdit(id: String) -> Element {
     let mut user = use_signal(|| User::default());
-    let mut password =use_signal(|| String::default());
+    let mut password = use_signal(|| String::default());
 
     let skins = use_resource(|| async move {
         get_textures_by_type(TextureType::Skin.into())

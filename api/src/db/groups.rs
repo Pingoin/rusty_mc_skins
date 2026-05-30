@@ -1,5 +1,5 @@
-use crate::app_error::AppError;
 use crate::Group;
+use crate::app_error::AppError;
 use sqlx::query;
 
 use super::Db;
@@ -13,15 +13,20 @@ impl Db {
             .map(|row| Group {
                 id: row.id,
                 group_name: row.group_name,
-                permissions: crate::Permissions(row.permissions),
+                permissions: row.permissions.into(),
+                created: None,
             })
             .collect();
 
         Ok(grups)
     }
 
-    pub async fn user_is_member(&self, user_id:String,group_id:String)-> Result<bool,AppError>{
-       let exists: Option<(i64,)> = sqlx::query_as(
+    pub async fn user_is_member(
+        &self,
+        user_id: String,
+        group_id: String,
+    ) -> Result<bool, AppError> {
+        let exists: Option<(i64,)> = sqlx::query_as(
             r#"
             SELECT 1 FROM user_groups
             WHERE user_id = ?1 AND group_id = ?2
@@ -57,13 +62,13 @@ impl Db {
             uuid::Uuid::new_v4().to_string()
         };
         let group_name = group.group_name.clone();
-        let permissions = group.permissions.0;
+        let permissions = group.permissions.bits();
 
         query!(
             "INSERT OR REPLACE INTO groups (id, group_name, permissions) VALUES (?1, ?2, ?3)",
             id,
             group_name,
-            permissions,
+            permissions as i64,
         )
         .execute(&self.pool)
         .await?;

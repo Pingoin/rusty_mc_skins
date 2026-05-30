@@ -1,4 +1,4 @@
-use api::{create_user, get_me, get_my_texture_type, login, logout, User};
+use api::{User, create_user, get_me, get_my_texture_type, login, logout};
 use dioxus::prelude::*;
 
 #[component]
@@ -24,21 +24,12 @@ pub fn Home() -> Element {
 
 #[component]
 fn UserCard(user: Resource<Option<User>>) -> Element {
-    let skin = use_resource(|| async move {
-        get_my_texture_type(api::TextureType::Skin)
-            .await
-            .ok()
-    });
-    let cape = use_resource(|| async move {
-        get_my_texture_type(api::TextureType::Cape)
-            .await
-            .ok()
-    });
-    let elytra = use_resource(|| async move {
-        get_my_texture_type(api::TextureType::Elytra)
-            .await
-            .ok()
-    });
+    let skin =
+        use_resource(|| async move { get_my_texture_type(api::TextureType::Skin).await.ok() });
+    let cape =
+        use_resource(|| async move { get_my_texture_type(api::TextureType::Cape).await.ok() });
+    let elytra =
+        use_resource(|| async move { get_my_texture_type(api::TextureType::Elytra).await.ok() });
     rsx! {
         div { class: "card card-border bg-base-100 w-96",
             div { class: "card-body",
@@ -156,9 +147,9 @@ fn LoginCard(user: Resource<Option<User>>) -> Element {
                             value: register,
                             oninput: move |evt| register.set(evt.checked()),
                         }
-                    
+
                     }
-                
+
                 }
                 div { class: "card-actions justify-end",
                     button {

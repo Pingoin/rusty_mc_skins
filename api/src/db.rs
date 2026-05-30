@@ -1,9 +1,9 @@
 use sqlx::SqlitePool;
-use tokio::sync::OnceCell;
 use tokio::fs::create_dir_all;
+use tokio::sync::OnceCell;
+mod groups;
 mod textures;
 mod user;
-mod groups;
 
 static DATABASE: OnceCell<Db> = OnceCell::const_new();
 
@@ -13,7 +13,7 @@ pub async fn get_db() -> &'static Db {
         .await
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Db {
     pool: SqlitePool,
 }

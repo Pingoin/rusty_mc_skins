@@ -20,6 +20,7 @@ strum = { workspace = true }
 strum_macros = { workspace = true }
 rand_core = { workspace = true, optional = true }
 async-trait= { workspace = true, optional = true }
+bitflags={workspace = true}
 
 [dependencies.axum_session]
 workspace = true
