@@ -20,15 +20,15 @@ impl Authentication<User, String, Db> for User {
     }
 
     fn is_authenticated(&self) -> bool {
-        !self.anonymous
+        !self.anonymous()
     }
 
     fn is_active(&self) -> bool {
-        !self.anonymous
+        !self.anonymous()
     }
 
     fn is_anonymous(&self) -> bool {
-        self.anonymous
+        self.anonymous()
     }
 }
 #[async_trait]

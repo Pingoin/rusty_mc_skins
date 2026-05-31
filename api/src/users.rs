@@ -15,9 +15,14 @@ pub struct User {
     pub selected_skin_id: Option<String>,
     pub selected_cape_id: Option<String>,
     pub selected_elytra_id: Option<String>,
-    pub anonymous: bool,
     pub permissions: Permissions,
     pub created: Option<String>,
+}
+
+impl User {
+    pub fn anonymous(&self) -> bool {
+        self.id == "".to_string()
+    }
 }
 
 #[post("/api/user/create")]
@@ -33,7 +38,7 @@ pub async fn create_user(user: User, password: String) -> Result<User> {
 pub async fn set_texture(texture: Texture) -> Result<()> {
     let database = db::get_db().await;
     if let Some(user) = auth.clone().current_user
-        && !user.anonymous
+        && !user.anonymous()
     {
         if texture.id == "".to_string() {
             database
@@ -78,7 +83,7 @@ pub async fn del_user_by_id(id: String) -> Result<()> {
 pub async fn get_me() -> Result<User> {
     let user = auth.current_user;
     if let Some(user) = user {
-        if user.anonymous {
+        if user.anonymous() {
             Err(anyhow::anyhow!("anonymous User").into())
         } else {
             Ok(user)

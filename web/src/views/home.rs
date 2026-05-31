@@ -147,9 +147,9 @@ fn LoginCard(user: Resource<Option<User>>) -> Element {
                             value: register,
                             oninput: move |evt| register.set(evt.checked()),
                         }
-
+                    
                     }
-
+                
                 }
                 div { class: "card-actions justify-end",
                     button {
@@ -171,7 +171,6 @@ async fn login_register(user_name: String, password1: String, password2: String,
     if register {
         if password1 == password2 {
             let mut user = User::default();
-            user.anonymous = false;
             user.username = user_name;
             let _ = create_user(user, password1).await;
         } else {

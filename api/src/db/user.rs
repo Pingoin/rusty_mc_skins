@@ -6,7 +6,7 @@ use argon2::{
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 use argon2::{PasswordHash, PasswordVerifier};
-use sqlx::{QueryBuilder, query};
+use sqlx::{QueryBuilder, Sqlite, query};
 
 use super::Db;
 
@@ -37,7 +37,6 @@ impl Db {
                 selected_skin_id: row.selected_skin_id,
                 selected_cape_id: row.selected_cape_id,
                 selected_elytra_id: row.selected_elytra_id,
-                anonymous: false,
                 permissions: Permissions::empty(),
                 created: None,
             })
@@ -55,9 +54,28 @@ impl Db {
     }
 
     pub async fn get_user_by_id(&self, id: String) -> Result<User, AppError> {
-        let user = sqlx::query_as!(DbUser, "select * from users where id = ?", id)
-            .fetch_one(&self.pool)
-            .await?;
+        let user = sqlx::query_as!(
+            User,
+            "SELECT
+                u.id,
+                u.username,
+                u.selected_skin_id,
+                u.selected_cape_id,
+                u.selected_elytra_id,
+                u.created,
+                COALESCE(SUM(g.permissions), 0) AS permissions
+            FROM users u
+            LEFT JOIN groups_users gu
+                ON gu.user_id = u.id
+            LEFT JOIN groups g
+                ON g.id = gu.group_id
+            WHERE u.id = ?
+            GROUP BY u.id;",
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
         Ok(user.into())
     }
 
@@ -72,6 +90,7 @@ impl Db {
         let user = sqlx::query_as!(DbUser, "select * from users where username = ?", name)
             .fetch_one(&self.pool)
             .await?;
+
         Ok(user.into())
     }
 
@@ -100,16 +119,16 @@ impl Db {
         .await?;
         user.id = id.clone();
 
-        let mut groups = vec![(id.clone(), "usr")];
-        if count==0{
-            groups.push((id.clone(),"adm"));
-            groups.push((id.clone(),"crtr"));
+        let mut groups = vec![(id.clone(), "usr".to_string())];
+        if count == 0 {
+            groups.push((id.clone(), "adm".to_string()));
+            groups.push((id.clone(), "crtr".to_string()));
         }
 
-        let mut qb = QueryBuilder::new("INSERT OR REPLACE INTO groups_users (user_id, group_id) ");
+        let mut qb: QueryBuilder<Sqlite> = QueryBuilder::new("INSERT OR REPLACE INTO groups_users (user_id, group_id) ");
 
         qb.push_values(groups.iter(), |mut b, group| {
-            b.push_bind(group.1).push_bind(group.0.clone());
+            b.push_bind(group.0.clone()).push_bind(group.1.clone());
         });
 
         qb.build().execute(&self.pool).await?;
@@ -187,7 +206,6 @@ impl Into<User> for DbUser {
             selected_skin_id: self.selected_skin_id,
             selected_cape_id: self.selected_cape_id,
             selected_elytra_id: self.selected_elytra_id,
-            anonymous: false,
             permissions: Permissions::empty(),
             created: self.created,
         }
