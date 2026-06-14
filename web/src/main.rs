@@ -1,4 +1,4 @@
-use crate::views::{NavItems, Route};
+use crate::{components::NavItems, views::Route};
 use api::{Permissions, User, get_me};
 use components::Navbar;
 use dioxus::prelude::*;
@@ -65,6 +65,6 @@ fn WebNavbar() -> Element {
         Navbar { NavItems {} }
         main { Outlet::<Route> {} }
 
-        footer { "test" }
+        //footer { "test" }
     }
 }

@@ -1,4 +1,4 @@
-use api::{Blob, Texture, TextureType, get_texture_by_id};
+use api::{Blob, Texture, TextureType};
 use dioxus::prelude::*;
 #[cfg(feature = "web")]
 use rfd::AsyncFileDialog;
@@ -6,17 +6,13 @@ use rfd::AsyncFileDialog;
 use crate::views::Route;
 
 #[component]
-pub fn TextureEdit(id: String) -> Element {
-    let mut texture = use_signal(|| Texture::default());
+pub fn NewTexture(tex_type: TextureType) -> Element {
+    let mut texture = use_signal(|| {
+        let mut tex = Texture::default();
+        tex.texture_type = tex_type;
+        tex
+    });
 
-    let tex_id = texture.read().clone().id;
-
-    if !(id.len() == 0 || id == "new".to_string() || tex_id == id) {
-        spawn(async move {
-            let t = get_texture_by_id(id).await.unwrap_or_default();
-            texture.set(t);
-        });
-    }
     #[cfg(feature = "web")]
     let file_handle = move |_| async move {
         let file = AsyncFileDialog::new()
@@ -60,11 +56,13 @@ pub fn TextureEdit(id: String) -> Element {
                 option { value: "Elytra", "Elytra" }
             }
             button { onclick: file_handle, "Pick Texture" }
-
-            img {
-                src: "data:image/png;base64,{texture.read().get_preview().unwrap_or_default().as_base64()}",
-                width: "100",
+            if !texture.read().image_data.is_empty() {
+                img {
+                    src: "data:image/png;base64,{texture.read().get_preview().unwrap_or_default().as_base64()}",
+                    width: "100",
+                }
             }
+
             button {
                 onclick: move |_| {
                     async move {

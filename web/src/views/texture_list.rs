@@ -1,5 +1,8 @@
-use api::{Texture, TextureType, User, get_me, get_textures, set_texture};
+use api::{Permissions, Texture, TextureType, User, get_me, get_textures, set_texture};
 use dioxus::prelude::*;
+
+
+use crate::{components::NewTexture, has_permission};
 
 #[component]
 pub fn TextureList(tex_type: TextureType) -> Element {
@@ -22,8 +25,27 @@ pub fn TextureList(tex_type: TextureType) -> Element {
                     TextureCard { texture, user_res: user.clone() }
                 }
             }
+            if has_permission(Permissions::TEXTURE_EDIT) {
+                div { class: "fab",
+                    button {
+                        class: "btn btn-lg btn-circle btn-primary",
+                        "onclick": "my_modal_1.showModal()",
+                        "+"
+                    }
+                }
+                dialog { class: "modal", id: "my_modal_1",
+                    div { class: "modal-box",
+                        h3 { class: "text-lg font-bold", "Hello!" }
+                        p { class: "py-4", "Press ESC key or click the button below to close" }
+                        div { class: "modal-action",
+                            NewTexture { tex_type }
+                        }
+                    }
+                }
+            }
+        
         }
-    }
+    } 
 }
 
 #[component]
