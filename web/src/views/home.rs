@@ -1,20 +1,21 @@
-use api::{User, create_user, get_me, get_my_texture_type, login, logout};
+use api::{User, create_user, get_my_texture_type, login, logout};
 use dioxus::prelude::*;
+
+use crate::{USER, reload_me};
 
 #[component]
 pub fn Home() -> Element {
-    let user = use_resource(|| async move { get_me().await.ok() });
-
     rsx! {
         article {
             {
-                if user.cloned().unwrap_or_default().is_some() {
+                if USER.cloned().anonymous() {
+
                     rsx! {
-                        UserCard { user: user.clone() }
+                        LoginCard {}
                     }
                 } else {
                     rsx! {
-                        LoginCard { user: user.clone() }
+                        UserCard {}
                     }
                 }
             }
@@ -23,7 +24,7 @@ pub fn Home() -> Element {
 }
 
 #[component]
-fn UserCard(user: Resource<Option<User>>) -> Element {
+fn UserCard() -> Element {
     let skin =
         use_resource(|| async move { get_my_texture_type(api::TextureType::Skin).await.ok() });
     let cape =
@@ -75,8 +76,7 @@ fn UserCard(user: Resource<Option<User>>) -> Element {
                         class: "btn btn-primary",
                         onclick: move |_| async move {
                             let _ = logout().await;
-                            user.set(Some(get_me().await.ok()));
-
+                            reload_me();
                         },
                         {"Logout"}
                     }
@@ -87,7 +87,7 @@ fn UserCard(user: Resource<Option<User>>) -> Element {
 }
 
 #[component]
-fn LoginCard(user: Resource<Option<User>>) -> Element {
+fn LoginCard() -> Element {
     let mut username = use_signal(|| "".to_string());
     let mut password = use_signal(|| "".to_string());
     let mut password2 = use_signal(|| "".to_string());
@@ -156,7 +156,7 @@ fn LoginCard(user: Resource<Option<User>>) -> Element {
                         class: "btn btn-primary",
                         onclick: move |_| async move {
                             login_register(username(), password(), password2(), register()).await;
-                            user.set(Some(get_me().await.ok()));
+                            reload_me();
 
                         },
                         {if register() { "register" } else { "login" }}
@@ -171,8 +171,9 @@ async fn login_register(user_name: String, password1: String, password2: String,
     if register {
         if password1 == password2 {
             let mut user = User::default();
-            user.username = user_name;
-            let _ = create_user(user, password1).await;
+            user.username = user_name.clone();
+            let _ = create_user(user.clone(), password1.clone()).await;
+            let _ = login(user_name, password1).await;
         } else {
         }
     } else {

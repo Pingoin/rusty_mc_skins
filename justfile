@@ -8,7 +8,7 @@ db-create-migration name:
     sqlx migrate add {{name}}
 
 serve: init
-    cd web && dx serve
+    dx serve
 
 init:
     cd web && curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.mjs

@@ -5,6 +5,7 @@ use crate::WebNavbar;
 mod group_edit;
 mod group_list;
 mod home;
+mod navigation;
 mod texture_edit;
 mod texture_list;
 mod user_edit;
@@ -13,6 +14,7 @@ mod user_list;
 use group_edit::GroupEdit;
 use group_list::GroupList;
 use home::Home;
+pub use navigation::NavItems;
 use texture_edit::TextureEdit;
 use texture_list::TextureList;
 use user_edit::UserEdit;
@@ -36,67 +38,4 @@ pub(crate) enum Route {
     GroupList{},
     #[route("/group/:id/edit")]
     GroupEdit{id:String},
-}
-
-#[component]
-pub fn NavItems() -> Element {
-    rsx! {
-        li {
-            Link { to: Route::Home {}, "Home" }
-        }
-        li {
-            Link {
-                to: Route::TextureList {
-                    tex_type: TextureType::Skin,
-                },
-                "Skins"
-            }
-        }
-        li {
-            Link {
-                to: Route::TextureList {
-                    tex_type: TextureType::Cape,
-                },
-                "Capes"
-            }
-        }
-        li {
-            Link {
-                to: Route::TextureList {
-                    tex_type: TextureType::Elytra,
-                },
-                "Elytra"
-            }
-        }
-        li {
-            Link {
-                to: Route::TextureEdit {
-                    id: "new".to_string(),
-                },
-                "New Texture"
-            }
-        }
-        li {
-            Link { to: Route::UserList {}, "User" }
-        }
-        li {
-            Link {
-                to: Route::UserEdit {
-                    id: "new".to_string(),
-                },
-                "New User"
-            }
-        }
-        li {
-            Link { to: Route::GroupList {}, "Groups" }
-        }
-        li {
-            Link {
-                to: Route::GroupEdit {
-                    id: "new".to_string(),
-                },
-                "New Group"
-            }
-        }
-    }
 }

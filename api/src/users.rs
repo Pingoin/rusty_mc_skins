@@ -23,6 +23,10 @@ impl User {
     pub fn anonymous(&self) -> bool {
         self.id == "".to_string()
     }
+
+    pub fn has_permission(&self,perm:Permissions)->bool{
+        self.permissions.contains(perm)
+    }
 }
 
 #[post("/api/user/create")]

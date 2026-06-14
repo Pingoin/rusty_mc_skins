@@ -11,7 +11,7 @@ impl Db {
         let grups = rows
             .into_iter()
             .map(|row| Group {
-                id: row.id,
+                id: row.id, 
                 group_name: row.group_name,
                 permissions: row.permissions.into(),
                 created: None,

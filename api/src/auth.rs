@@ -2,7 +2,6 @@ use crate::{User, db::Db};
 use async_trait::async_trait;
 use axum_session_auth::*;
 use axum_session_sqlx::SessionSqlitePool;
-use sqlx::sqlite::SqlitePool;
 
 pub(crate) type Session = axum_session_auth::AuthSession<User, String, SessionSqlitePool, Db>;
 pub(crate) type AuthLayer =
@@ -31,10 +30,5 @@ impl Authentication<User, String, Db> for User {
         self.anonymous()
     }
 }
-#[async_trait]
-impl HasPermission<SqlitePool> for User {
-    async fn has(&self, perm: &str, _pool: &Option<&SqlitePool>) -> bool {
-        let permission = crate::Permissions::from_str(perm);
-        self.permissions.contains(permission)
-    }
-}
+
+

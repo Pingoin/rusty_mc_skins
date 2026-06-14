@@ -1,4 +1,5 @@
 use crate::views::{NavItems, Route};
+use api::{Permissions, User, get_me};
 use components::Navbar;
 use dioxus::prelude::*;
 
@@ -8,6 +9,21 @@ mod views;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
 //const MAIN_CSS: Asset = asset!("/assets/main.scss");
+
+pub(crate) static USER: GlobalSignal<User> = Signal::global(|| User::default());
+
+pub(crate) fn reload_me() {
+    spawn(async move {
+        let user = get_me().await.ok();
+        if let Some(user) = user {
+            *USER.write() = user;
+        }
+    });
+}
+
+pub(crate) fn has_permission(perm: Permissions)->bool{
+    USER.cloned().has_permission(perm)
+}
 
 fn main() {
     // Run `serve()` on the server only
@@ -27,7 +43,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     // Build cool things ✌️
-
+    reload_me();
     rsx! {
         // Global app resources
         document::Link { rel: "icon", href: FAVICON }
