@@ -11,6 +11,7 @@ COPY . .
 
 RUN cd web && curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.mjs
 RUN cd web && curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.mjs
+RUN mkdir data
 RUN sqlx database create
 RUN sqlx migrate run
 # Create the final bundle folder. Bundle with release build profile to enable optimizations.
