@@ -1,4 +1,4 @@
-use api::{Blob, Permissions, Texture, TextureType, get_textures, set_texture};
+use api::{Blob, Permissions, Texture, TextureType, del_texture_by_id, get_textures, set_texture};
 use dioxus::prelude::*;
 
 use crate::{USER, has_permission, reload_me};
@@ -13,8 +13,7 @@ pub fn TextureList(tex_type: TextureType) -> Element {
             .filter(|t| tex_type == t.texture_type)
             .collect::<Vec<Texture>>()
     }));
-
-        let mut texture = use_signal(|| {
+    let mut texture = use_signal(|| {
         let mut tex = Texture::default();
         tex.texture_type = tex_type;
         tex
@@ -25,7 +24,12 @@ pub fn TextureList(tex_type: TextureType) -> Element {
             h1 { "Texture List" }
             div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8",
                 for texture in textures.cloned().unwrap_or_default() {
-                    TextureCard { texture }
+                    TextureCard {
+                        texture,
+                        on_change: move || {
+                            textures.restart();
+                        },
+                    }
                 }
             }
             if has_permission(Permissions::TEXTURE_EDIT) {
@@ -107,7 +111,7 @@ pub fn TextureList(tex_type: TextureType) -> Element {
 }
 
 #[component]
-fn TextureCard(texture: Texture) -> Element {
+fn TextureCard(texture: Texture, on_change: EventHandler) -> Element {
     let is_set = match texture.texture_type {
         TextureType::Skin => USER.cloned().selected_skin_id == Some(texture.id.clone()),
         TextureType::Cape => USER.cloned().selected_cape_id == Some(texture.id.clone()),
@@ -116,6 +120,7 @@ fn TextureCard(texture: Texture) -> Element {
 
     let set_me = set_texture;
     let me = use_signal(|| texture.clone());
+    let id=use_signal(|| texture.id.clone());
 
     rsx! {
         div { class: "indicator",
@@ -139,6 +144,37 @@ fn TextureCard(texture: Texture) -> Element {
                 div { class: "card-body",
                     h2 { class: "card-title", {texture.skin_name.clone()} }
                     div { class: "card-actions justify-end",
+                        if has_permission(Permissions::TEXTURE_EDIT) {
+                            button {
+                                class: "btn btn-error",
+                                "onclick": "del_modal_1.showModal()",
+                                "Delete"
+                            }
+                            dialog { class: "modal", id: "del_modal_1",
+                                div { class: "modal-box",
+                                    h3 { class: "text-lg font-bold", "Hello!" }
+                                    p { class: "py-4", {id.clone()} }
+                                    div { class: "modal-action",
+                                        form { method: "dialog",
+                                            button { class: "btn", "Abort" }
+                                            button {
+                                                class: "btn btn-error",
+                                                onclick: move |evt| {
+                                                    evt.prevent_default();
+                                                    let value = id.clone();
+                                                    async move {
+                                                        let _ = del_texture_by_id(value.cloned()).await;
+                                                        on_change.call(());
+                                                        let _ = document::eval("document.getElementById('del_modal_1').close()");
+                                                    }
+                                                },
+                                                "Delete"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         button {
                             class: "btn btn-primary",
                             onclick: move |_| async move {
@@ -147,6 +183,7 @@ fn TextureCard(texture: Texture) -> Element {
                             },
                             "Apply to me"
                         }
+                    
                     }
                 }
             }
