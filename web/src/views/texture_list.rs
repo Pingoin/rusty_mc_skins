@@ -23,9 +23,10 @@ pub fn TextureList(tex_type: TextureType) -> Element {
         article { class: "",
             h1 { "Texture List" }
             div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8",
-                for texture in textures.cloned().unwrap_or_default() {
+                for (index , texture) in textures.cloned().unwrap_or_default().into_iter().enumerate() {
                     TextureCard {
                         texture,
+                        index,
                         on_change: move || {
                             textures.restart();
                         },
@@ -111,7 +112,7 @@ pub fn TextureList(tex_type: TextureType) -> Element {
 }
 
 #[component]
-fn TextureCard(texture: Texture, on_change: EventHandler) -> Element {
+fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Element {
     let is_set = match texture.texture_type {
         TextureType::Skin => USER.cloned().selected_skin_id == Some(texture.id.clone()),
         TextureType::Cape => USER.cloned().selected_cape_id == Some(texture.id.clone()),
@@ -147,10 +148,12 @@ fn TextureCard(texture: Texture, on_change: EventHandler) -> Element {
                         if has_permission(Permissions::TEXTURE_EDIT) {
                             button {
                                 class: "btn btn-error",
-                                "onclick": "del_modal_1.showModal()",
+                                "onclick": format!("del_modal_{}.showModal()", index),
                                 "Delete"
                             }
-                            dialog { class: "modal", id: "del_modal_1",
+                            dialog {
+                                class: "modal",
+                                id: format!("del_modal_{}", index),
                                 div { class: "modal-box",
                                     h3 { class: "text-lg font-bold", "Hello!" }
                                     p { class: "py-4", {id.clone()} }
@@ -165,7 +168,10 @@ fn TextureCard(texture: Texture, on_change: EventHandler) -> Element {
                                                     async move {
                                                         let _ = del_texture_by_id(value.cloned()).await;
                                                         on_change.call(());
-                                                        let _ = document::eval("document.getElementById('del_modal_1').close()");
+                                                        let _ = document::eval(
+                                                            format!("document.getElementById('del_modal_{}').close()", index)
+                                                                .as_str(),
+                                                        );
                                                     }
                                                 },
                                                 "Delete"
