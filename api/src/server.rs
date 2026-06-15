@@ -19,8 +19,9 @@ pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
         .await?;
 
     let router = dioxus::server::router(app)
-        .route("/skin/{user_name}", get(get_skin))
-        .route("/cape/{user_name}", get(get_cape))
+        .route("/skins/{user_name}", get(get_skin))
+        .route("/capes/{user_name}", get(get_cape))
+        .route("/elytras/{user_name}", get(get_elytra))
         .layer(AuthLayer::new(Some(database.clone())).with_config(
             AuthConfig::<String>::default().with_anonymous_user_id(Some("".to_ascii_uppercase())),
         ))
@@ -49,6 +50,12 @@ async fn get_cape(Path(user_name): Path<String>) -> Response {
         .into_response()
 }
 
+async fn get_elytra(Path(user_name): Path<String>) -> Response {
+    get_tex(user_name, TextureType::Elytra)
+        .await
+        .unwrap()
+        .into_response()
+}
 async fn get_tex(user_name: String, texture_type: TextureType) -> Result<Blob> {
     let database = db::get_db().await;
 
