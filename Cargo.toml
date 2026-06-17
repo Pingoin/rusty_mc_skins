@@ -25,6 +25,7 @@ axum_session_auth = "0.20.0"
 axum_session_sqlx = { version = "0.10.0", features = ["tls-rustls","sqlite"]}
 async-trait = { version = "0.1.88"}
 bitflags={version = "2.11.1", features = ["serde","std"]}
+git-version = "0.3.9"
 # workspace
 ui = { path = "ui" }
 api = { path = "api" }

@@ -2,12 +2,15 @@ use crate::{components::NavItems, views::Route};
 use api::{Permissions, User, get_me};
 use components::Navbar;
 use dioxus::prelude::*;
+use git_version::git_version;
+
 
 mod components;
 mod views;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
+const GIT_VERSION: &str = git_version!();
 //const MAIN_CSS: Asset = asset!("/assets/main.scss");
 
 pub(crate) static USER: GlobalSignal<User> = Signal::global(|| User::default());
@@ -49,10 +52,14 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         //document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: TAILWIND }
-        div { class: "bg-base-200 h-screen",
+        div { class: "bg-base-200",
             header {}
 
             Router::<Route> {}
+            footer {
+                "Version: "
+                {GIT_VERSION}
+            }
         }
     }
 }
