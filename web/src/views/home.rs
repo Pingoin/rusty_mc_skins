@@ -147,9 +147,9 @@ fn LoginCard() -> Element {
                             value: register,
                             oninput: move |evt| register.set(evt.checked()),
                         }
-                    
+
                     }
-                
+
                 }
                 div { class: "card-actions justify-end",
                     button {

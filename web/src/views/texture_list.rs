@@ -18,7 +18,7 @@ pub fn TextureList(tex_type: TextureType) -> Element {
         article { class: "",
             h1 { "Texture List" }
             div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8",
-                for (index , texture) in textures.cloned().unwrap_or_default().into_iter().enumerate() {
+                for (index, texture) in textures.cloned().unwrap_or_default().into_iter().enumerate() {
                     TextureCard {
                         texture,
                         index,

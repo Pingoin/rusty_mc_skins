@@ -81,7 +81,7 @@ pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Ele
                             },
                             "Apply to me"
                         }
-                    
+
                     }
                 }
             }

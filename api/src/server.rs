@@ -10,13 +10,8 @@ pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
     use axum_session::{SessionConfig, SessionLayer, SessionStore};
     use axum_session_auth::AuthConfig;
     use axum_session_sqlx::SessionSqlitePool;
-    use sqlx::sqlite::SqlitePoolOptions;
 
     let database = db::get_db().await;
-    let sessoin_db = SqlitePoolOptions::new()
-        .max_connections(20)
-        .connect_with("sqlite::memory:".parse()?)
-        .await?;
 
     let router = dioxus::server::router(app)
         .route("/skins/{user_name}", get(get_skin))
@@ -27,7 +22,7 @@ pub async fn get_router(app: fn() -> Element) -> anyhow::Result<Router> {
         ))
         .layer(SessionLayer::new(
             SessionStore::<SessionSqlitePool>::new(
-                Some(sessoin_db.into()),
+                Some(database.get_pool().into()),
                 SessionConfig::default().with_table_name("session_table"),
             )
             .await?,
