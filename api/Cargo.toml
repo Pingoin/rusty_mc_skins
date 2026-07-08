@@ -19,21 +19,12 @@ image = { workspace = true }
 strum = { workspace = true }
 strum_macros = { workspace = true }
 rand_core = { workspace = true, optional = true }
-async-trait= { workspace = true, optional = true }
-bitflags={workspace = true}
-
-[dependencies.axum_session]
-workspace = true
-optional = true
-
-[dependencies.axum_session_auth]
-workspace = true
-optional = true
-
-[dependencies.axum_session_sqlx]
-workspace = true
-features = ["sqlite"]
-optional = true
+async-trait = { workspace = true, optional = true }
+bitflags = { workspace = true }
+thiserror = { workspace = true }
+axum_session = { workspace = true, optional = true }
+axum_session_auth = { workspace = true, optional = true }
+axum_session_sqlx = { workspace = true, features = ["sqlite"], optional = true }
 
 
 [features]

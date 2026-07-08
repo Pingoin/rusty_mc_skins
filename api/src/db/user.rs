@@ -188,12 +188,12 @@ pub(crate) struct DbUser {
 }
 
 impl DbUser {
-    pub fn verify_password(&self, password: String) -> anyhow::Result<()> {
+    pub fn verify_password(&self, password: String) -> Result<(),AppError> {
         let parsed_hash =
             PasswordHash::new(&self.password_hash).map_err(|e| anyhow::anyhow!("{:?}", e))?;
         Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)
-            .map_err(|e| anyhow::anyhow!("{:?}", e))?;
+            .map_err(|_| AppError::WrongPassword)?;
         Ok(())
     }
 }

@@ -110,6 +110,7 @@ dependencies = [
  "sqlx",
  "strum",
  "strum_macros",
+ "thiserror 2.0.18",
  "tokio",
  "uuid",
 ]
@@ -5375,6 +5376,7 @@ dependencies = [
  "rfd",
  "serde",
  "strum",
+ "thiserror 2.0.18",
  "tokio",
 ]
 
