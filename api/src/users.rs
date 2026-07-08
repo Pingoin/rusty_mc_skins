@@ -1,5 +1,6 @@
 use crate::Permissions;
 use crate::Texture;
+use crate::app_error::AppError;
 #[cfg(feature = "server")]
 use crate::auth;
 #[cfg(feature = "server")]

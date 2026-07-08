@@ -4,9 +4,9 @@ use components::Navbar;
 use dioxus::prelude::*;
 use git_version::git_version;
 
-
 mod components;
 mod views;
+mod plugins;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
@@ -24,7 +24,7 @@ pub(crate) fn reload_me() {
     });
 }
 
-pub(crate) fn has_permission(perm: Permissions)->bool{
+pub(crate) fn has_permission(perm: Permissions) -> bool {
     USER.cloned().has_permission(perm)
 }
 
@@ -42,6 +42,8 @@ fn main() {
     #[cfg(not(feature = "server"))]
     dioxus::launch(App);
 }
+
+static ALERT_TEXT: GlobalSignal<String> = Signal::global(|| "ALERT TEXT".to_string());
 
 #[component]
 fn App() -> Element {
@@ -72,6 +74,20 @@ fn WebNavbar() -> Element {
         Navbar { NavItems {} }
         main { Outlet::<Route> {} }
 
+        dialog { class: "modal", id: "Alert",
+            div { class: "modal-box",
+                h3 { class: "text-lg font-bold", "Hello!" }
+                p { class: "py-4", {ALERT_TEXT.read().clone()} }
+            }
+            form { class: "modal-backdrop", method: "dialog",
+                button { "close" }
+            }
+        }
         //footer { "test" }
     }
+}
+
+pub fn show_alert(message: String) {
+    document::eval("document.getElementById('Alert').open()");
+    ALERT_TEXT.write().replace_range(.., &message);
 }
