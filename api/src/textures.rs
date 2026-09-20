@@ -93,7 +93,7 @@ impl From<String> for TextureType {
             "Elytra" => Self::Elytra,
             _ => Self::Skin,
         }
-    }
+    } 
 }
 
 impl Into<String> for TextureType {
