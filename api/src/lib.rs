@@ -7,9 +7,7 @@ mod server;
 #[cfg(feature = "server")]
 pub use server::get_router;
 
-#[cfg(feature = "server")]
 mod app_error;
-
 mod users;
 pub use users::*;
 
