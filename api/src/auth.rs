@@ -30,5 +30,3 @@ impl Authentication<User, String, Db> for User {
         self.anonymous()
     }
 }
-
-

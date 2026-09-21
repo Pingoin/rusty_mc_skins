@@ -63,11 +63,9 @@ mod tests {
 
     #[test]
     fn test_permissions() {
-        let user_perm= Permissions::TEXTURE_USE;
-        let creator_perm= Permissions::TEXTURE_EDIT;
-        let admin_perm=Permissions::GROUP_EDIT |Permissions::USER_EDIT;
-
-
+        let user_perm = Permissions::TEXTURE_USE;
+        let creator_perm = Permissions::TEXTURE_EDIT;
+        let admin_perm = Permissions::GROUP_EDIT | Permissions::USER_EDIT;
 
         dbg!(user_perm);
         dbg!(creator_perm);

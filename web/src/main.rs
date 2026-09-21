@@ -2,11 +2,13 @@ use crate::{components::NavItems, views::Route};
 use api::{Permissions, User, get_me};
 use components::Navbar;
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 use git_version::git_version;
 
 mod components;
-mod views;
+mod i18n;
 mod plugins;
+mod views;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
@@ -46,6 +48,7 @@ static ALERT_TEXT: GlobalSignal<String> = Signal::global(|| "ALERT TEXT".to_stri
 #[component]
 fn App() -> Element {
     // Build cool things ✌️
+    i18n::init_i18n();
     reload_me();
     rsx! {
         // Global app resources
@@ -57,7 +60,8 @@ fn App() -> Element {
 
             Router::<Route> {}
             footer {
-                "Version: "
+                {tid!("app-version")}
+                " "
                 {GIT_VERSION}
             }
         }
@@ -74,11 +78,11 @@ fn WebNavbar() -> Element {
 
         dialog { class: "modal", id: "Alert",
             div { class: "modal-box",
-                h3 { class: "text-lg font-bold", "Hello!" }
+                h3 { class: "text-lg font-bold", {tid!("alert-title")} }
                 p { class: "py-4", {ALERT_TEXT.read().clone()} }
             }
             form { class: "modal-backdrop", method: "dialog",
-                button { "close" }
+                button { {tid!("alert-close")} }
             }
         }
         //footer { "test" }

@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 dioxus = { workspace = true, features = ["router", "fullstack"] }
+dioxus-i18n = { workspace = true }
 api = { workspace = true }
 tokio = { workspace = true, features = ["full"], optional = true }
 serde = { workspace = true, features = ["derive"]}

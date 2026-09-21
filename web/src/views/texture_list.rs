@@ -1,7 +1,11 @@
 use api::{Permissions, Texture, TextureType, get_textures};
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
-use crate::{components::{NewTexture, TextureCard}, has_permission};
+use crate::{
+    components::{NewTexture, TextureCard},
+    has_permission,
+};
 
 #[component]
 pub fn TextureList(tex_type: TextureType) -> Element {
@@ -16,7 +20,15 @@ pub fn TextureList(tex_type: TextureType) -> Element {
 
     rsx! {
         article { class: "",
-            h1 { "Texture List" }
+            h1 {
+                {
+                    match tex_type {
+                        TextureType::Skin => tid!("texture-list-skins"),
+                        TextureType::Cape => tid!("texture-list-capes"),
+                        TextureType::Elytra => tid!("texture-list-elytra"),
+                    }
+                }
+            }
             div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8",
                 for (index, texture) in textures.cloned().unwrap_or_default().into_iter().enumerate() {
                     TextureCard {
@@ -39,4 +51,3 @@ pub fn TextureList(tex_type: TextureType) -> Element {
         }
     }
 }
-

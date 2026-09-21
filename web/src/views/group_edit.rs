@@ -1,6 +1,7 @@
 use crate::views::Route;
 use api::{Group, Permissions, get_group_by_id, get_users};
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
 #[component]
 pub fn GroupEdit(id: String) -> Element {
@@ -19,26 +20,30 @@ pub fn GroupEdit(id: String) -> Element {
         div { class: "flex flex-col gap-4 max-w-3xl",
             div { class: "flex flex-wrap items-center justify-between gap-2",
                 h1 { class: "text-2xl font-bold",
-                    if group.read().id.is_empty() { "New Group" } else { "Edit Group" }
+                    if group.read().id.is_empty() {
+                        {tid!("group-edit-new")}
+                    } else {
+                        {tid!("group-edit-edit")}
+                    }
                 }
                 button {
                     class: "btn btn-ghost btn-sm",
                     onclick: move |_| {
                         navigator().push(Route::GroupList {});
                     },
-                    "Back to list"
+                    {tid!("group-edit-back")}
                 }
             }
 
             div { class: "card bg-base-100 card-border",
                 div { class: "card-body",
                     fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                        legend { class: "fieldset-legend", "Group" }
-                        label { class: "label", "Group name" }
+                        legend { class: "fieldset-legend", {tid!("group-edit-group")} }
+                        label { class: "label", {tid!("group-edit-name")} }
                         input {
                             class: "input w-full",
                             r#type: "text",
-                            placeholder: "Group name",
+                            placeholder: "{tid!(\"group-edit-name-placeholder\")}",
                             value: "{group.read().group_name}",
                             oninput: move |e| {
                                 let mut t = group.read().clone();
@@ -49,7 +54,7 @@ pub fn GroupEdit(id: String) -> Element {
                     }
 
                     fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                        legend { class: "fieldset-legend", "Permissions" }
+                        legend { class: "fieldset-legend", {tid!("group-edit-permissions")} }
                         div { class: "flex flex-col gap-2",
                             for (permission, name) in Permissions::all_named().into_iter() {
                                 label { class: "label cursor-pointer justify-start gap-3",
@@ -72,12 +77,12 @@ pub fn GroupEdit(id: String) -> Element {
                             }
                         }
                         p { class: "label text-base-content/60",
-                            "Select which permissions members of this group have."
+                            {tid!("group-edit-permissions-hint")}
                         }
                     }
 
                     fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                        legend { class: "fieldset-legend", "Members" }
+                        legend { class: "fieldset-legend", {tid!("group-edit-members")} }
                         match users.cloned() {
                             None => rsx! {
                                 div { class: "flex justify-center p-4",
@@ -86,15 +91,11 @@ pub fn GroupEdit(id: String) -> Element {
                             },
                             Some(list) => rsx! {
                                 if list.is_empty() {
-                                    p { class: "text-sm text-base-content/60",
-                                        "No users found."
-                                    }
+                                    p { class: "text-sm text-base-content/60", {tid!("group-edit-no-users")} }
                                 } else {
                                     div { class: "flex flex-wrap gap-2",
                                         for user in list {
-                                            span { class: "badge badge-ghost",
-                                                "{user.username}"
-                                            }
+                                            span { class: "badge badge-ghost", "{user.username}" }
                                         }
                                     }
                                 }
@@ -108,13 +109,13 @@ pub fn GroupEdit(id: String) -> Element {
                             onclick: move |_| {
                                 navigator().push(Route::GroupList {});
                             },
-                            "Cancel"
+                            {tid!("group-edit-cancel")}
                         }
                         if !group.read().id.is_empty() {
                             button {
                                 class: "btn btn-error btn-outline",
                                 "onclick": "del_group_modal.showModal()",
-                                "Delete"
+                                {tid!("group-edit-delete")}
                             }
                         }
                         button {
@@ -127,7 +128,7 @@ pub fn GroupEdit(id: String) -> Element {
                                     nav.push(Route::GroupList {});
                                 }
                             },
-                            "Save"
+                            {tid!("group-edit-save")}
                         }
                     }
                 }
@@ -135,13 +136,13 @@ pub fn GroupEdit(id: String) -> Element {
 
             dialog { class: "modal", id: "del_group_modal",
                 div { class: "modal-box",
-                    h3 { class: "text-lg font-bold", "Delete group?" }
+                    h3 { class: "text-lg font-bold", {tid!("group-edit-delete-title")} }
                     p { class: "py-4",
-                        "Delete group \"{group.read().group_name}\"? This cannot be undone."
+                        {tid!("group-edit-delete-message", name : group.read().group_name.clone())}
                     }
                     div { class: "modal-action",
                         form { method: "dialog",
-                            button { class: "btn", "Abort" }
+                            button { class: "btn", {tid!("group-edit-abort")} }
                             button {
                                 class: "btn btn-error",
                                 onclick: move |evt| {
@@ -153,13 +154,13 @@ pub fn GroupEdit(id: String) -> Element {
                                         nav.push(Route::GroupList {});
                                     }
                                 },
-                                "Delete"
+                                {tid!("group-edit-delete")}
                             }
                         }
                     }
                 }
                 form { method: "dialog", class: "modal-backdrop",
-                    button { "close" }
+                    button { {tid!("group-edit-close")} }
                 }
             }
         }

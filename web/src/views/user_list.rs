@@ -1,5 +1,6 @@
 use api::get_users;
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
 use crate::views::Route;
 
@@ -10,14 +11,16 @@ pub fn UserList() -> Element {
 
         div { class: "flex flex-col gap-4",
             div { class: "flex flex-wrap items-center justify-between gap-2",
-                h1 { class: "text-2xl font-bold", "User List" }
+                h1 { class: "text-2xl font-bold", {tid!("user-list-title")} }
                 button {
                     class: "btn btn-primary btn-sm",
                     onclick: move |_| {
                         let nav = navigator();
-                        nav.push(Route::UserEdit { id: "new".to_string() });
+                        nav.push(Route::UserEdit {
+                            id: "new".to_string(),
+                        });
                     },
-                    "New User"
+                    {tid!("user-list-new")}
                 }
             }
 
@@ -31,31 +34,25 @@ pub fn UserList() -> Element {
                         },
                         Some(list) => rsx! {
                             if list.is_empty() {
-                                p { class: "p-6 text-center text-base-content/60",
-                                    "No users found."
-                                }
+                                p { class: "p-6 text-center text-base-content/60", {tid!("user-list-empty")} }
                             } else {
                                 div { class: "overflow-x-auto",
                                     table { class: "table table-zebra",
                                         thead {
                                             tr {
-                                                th { "Username" }
-                                                th { "ID" }
-                                                th { class: "text-right", "Actions" }
+                                                th { {tid!("user-list-col-username")} }
+                                                th { {tid!("user-list-col-id")} }
+                                                th { class: "text-right", {tid!("user-list-col-actions")} }
                                             }
                                         }
                                         tbody {
                                             for user in list {
                                                 tr {
                                                     td {
-                                                        span { class: "font-medium",
-                                                            "{user.username}"
-                                                        }
+                                                        span { class: "font-medium", "{user.username}" }
                                                     }
                                                     td {
-                                                        span { class: "badge badge-ghost badge-sm font-mono",
-                                                            "{user.id}"
-                                                        }
+                                                        span { class: "badge badge-ghost badge-sm font-mono", "{user.id}" }
                                                     }
                                                     td { class: "text-right",
                                                         button {
@@ -67,7 +64,7 @@ pub fn UserList() -> Element {
                                                                     id: user.clone().id.clone(),
                                                                 });
                                                             },
-                                                            "Edit"
+                                                            {tid!("user-list-edit")}
                                                         }
                                                     }
                                                 }

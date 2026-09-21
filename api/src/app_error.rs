@@ -2,11 +2,10 @@ use dioxus::{fullstack::AsStatusCode, prelude::*};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-
 #[derive(Error, Debug, Serialize, Deserialize)]
-pub enum AppError{
+pub enum AppError {
     #[error("{0}")]
-    Other(String),    
+    Other(String),
     #[error("An DatabaseError accured: {0}")]
     Database(String),
     #[error("Wrong Password")]
@@ -31,9 +30,9 @@ impl From<anyhow::Error> for AppError {
 impl AsStatusCode for AppError {
     fn as_status_code(&self) -> StatusCode {
         match self {
-            AppError::Other(_)=> StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::Database(_)=>StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::WrongPassword=>StatusCode::UNAUTHORIZED,
+            AppError::Other(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::WrongPassword => StatusCode::UNAUTHORIZED,
             AppError::ServerFnError(e) => e.as_status_code(),
         }
     }

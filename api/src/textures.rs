@@ -93,7 +93,7 @@ impl From<String> for TextureType {
             "Elytra" => Self::Elytra,
             _ => Self::Skin,
         }
-    } 
+    }
 }
 
 impl Into<String> for TextureType {
@@ -318,8 +318,8 @@ impl Blob {
     pub fn as_base64(&self) -> String {
         BASE64_STANDARD.encode(&self.0)
     }
-    pub fn is_empty(&self) -> bool{
-        self.0.len()==0
+    pub fn is_empty(&self) -> bool {
+        self.0.len() == 0
     }
 }
 

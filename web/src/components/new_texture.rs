@@ -1,5 +1,6 @@
 use api::{Blob, Texture, TextureType};
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
 #[component]
 pub fn NewTexture(tex_type: TextureType, on_change: EventHandler) -> Element {
@@ -35,13 +36,13 @@ pub fn NewTexture(tex_type: TextureType, on_change: EventHandler) -> Element {
                             });
                         },
 
-                        h1 { "Texture" }
+                        h1 { {tid!("new-texture-title")} }
                         fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4",
                             label { class: "label",
-                                "Texture Name"
+                                {tid!("new-texture-name")}
                                 input {
                                     class: "input",
-                                    placeholder: "Texture Name",
+                                    placeholder: "{tid!(\"new-texture-name-placeholder\")}",
                                     r#type: "text",
                                     value: "{texture.read().skin_name}",
                                     oninput: move |e| {
@@ -75,7 +76,9 @@ pub fn NewTexture(tex_type: TextureType, on_change: EventHandler) -> Element {
                                     width: "100",
                                 }
                             }
-                            button { class: "btn btn-primary", r#type: "submit", "Save" }
+                            button { class: "btn btn-primary", r#type: "submit",
+                                {tid!("new-texture-save")}
+                            }
                         }
                     }
                 }

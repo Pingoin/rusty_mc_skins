@@ -1,7 +1,8 @@
 use api::{get_my_texture_type, logout};
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
-use crate::{USER, reload_me, components::LoginCard};
+use crate::{USER, components::LoginCard, reload_me};
 
 #[component]
 pub fn Home() -> Element {
@@ -34,7 +35,7 @@ fn UserCard() -> Element {
     rsx! {
         div { class: "card card-border bg-base-100 w-96",
             div { class: "card-body",
-                h2 { class: "card-title", "Ich" }
+                h2 { class: "card-title", {tid!("home-profile")} }
                 {
                     if let Some(Some(skin)) = skin.cloned() {
                         rsx! {
@@ -78,11 +79,10 @@ fn UserCard() -> Element {
                             let _ = logout().await;
                             reload_me();
                         },
-                        {"Logout"}
+                        {tid!("home-logout")}
                     }
                 }
             }
         }
     }
 }
-

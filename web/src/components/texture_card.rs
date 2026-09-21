@@ -1,10 +1,11 @@
 use api::{Permissions, Texture, TextureType, del_texture_by_id, set_texture};
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
 use crate::{USER, has_permission, reload_me};
 
 #[component]
-pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Element {
+pub fn TextureCard(texture: Texture, index: usize, on_change: EventHandler) -> Element {
     let is_set = match texture.texture_type {
         TextureType::Skin => USER.cloned().selected_skin_id == Some(texture.id.clone()),
         TextureType::Cape => USER.cloned().selected_cape_id == Some(texture.id.clone()),
@@ -13,14 +14,14 @@ pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Ele
 
     let set_me = set_texture;
     let me = use_signal(|| texture.clone());
-    let id=use_signal(|| texture.id.clone());
+    let id = use_signal(|| texture.id.clone());
 
     rsx! {
         div { class: "indicator",
             {
                 if is_set {
                     rsx! {
-                        span { class: "indicator-item badge badge-primary", "Me" }
+                        span { class: "indicator-item badge badge-primary", {tid!("texture-active")} }
                     }
                 } else {
                     rsx! {}
@@ -30,7 +31,7 @@ pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Ele
                 figure {
                     img {
                         class: "w-48",
-                        alt: "Shoes",
+                        alt: "{texture.skin_name}",
                         src: "data:image/png;base64,{texture.get_preview().unwrap_or_default().as_base64()}",
                     }
                 }
@@ -41,17 +42,19 @@ pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Ele
                             button {
                                 class: "btn btn-error",
                                 "onclick": format!("del_modal_{}.showModal()", index),
-                                "Delete"
+                                {tid!("texture-delete")}
                             }
                             dialog {
                                 class: "modal",
                                 id: format!("del_modal_{}", index),
                                 div { class: "modal-box",
-                                    h3 { class: "text-lg font-bold", "Hello!" }
-                                    p { class: "py-4", {id.clone()} }
+                                    h3 { class: "text-lg font-bold", {tid!("texture-delete-title")} }
+                                    p { class: "py-4",
+                                        {tid!("texture-delete-message", name : texture.skin_name.clone())}
+                                    }
                                     div { class: "modal-action",
                                         form { method: "dialog",
-                                            button { class: "btn", "Abort" }
+                                            button { class: "btn", {tid!("texture-abort")} }
                                             button {
                                                 class: "btn btn-error",
                                                 onclick: move |evt| {
@@ -66,7 +69,7 @@ pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Ele
                                                         );
                                                     }
                                                 },
-                                                "Delete"
+                                                {tid!("texture-delete")}
                                             }
                                         }
                                     }
@@ -79,7 +82,7 @@ pub fn TextureCard(texture: Texture,index:usize, on_change: EventHandler) -> Ele
                                 let _ = set_me(me()).await;
                                 reload_me();
                             },
-                            "Apply to me"
+                            {tid!("texture-apply")}
                         }
 
                     }

@@ -25,7 +25,7 @@ impl User {
         self.id == "".to_string()
     }
 
-    pub fn has_permission(&self,perm:Permissions)->bool{
+    pub fn has_permission(&self, perm: Permissions) -> bool {
         self.permissions.contains(perm)
     }
 }
@@ -99,7 +99,7 @@ pub async fn get_me() -> Result<User> {
 /// We use the `auth::Session` extractor to get access to the current user session.
 /// This lets us modify the user session, log in/out, and access the current user.
 #[post("/api/user/login", auth: auth::Session)]
-pub async fn login(user: String, password: String) -> Result<(),AppError> {
+pub async fn login(user: String, password: String) -> Result<(), AppError> {
     let database = db::get_db().await;
     let user = database.get_user_by_name(user).await?;
     user.verify_password(password)?;
@@ -110,7 +110,7 @@ pub async fn login(user: String, password: String) -> Result<(),AppError> {
 
 /// Just like `login`, but this time we log out the user.
 #[post("/api/user/logout", auth: auth::Session)]
-pub async fn logout() -> Result<(),AppError> {
+pub async fn logout() -> Result<(), AppError> {
     auth.logout_user();
     Ok(())
 }

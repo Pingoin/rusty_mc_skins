@@ -1,5 +1,6 @@
 use api::{TextureType, User, get_textures_by_type, get_user_by_id};
 use dioxus::prelude::*;
+use dioxus_i18n::tid;
 
 use crate::views::Route;
 
@@ -37,26 +38,30 @@ pub fn UserEdit(id: String) -> Element {
         div { class: "flex flex-col gap-4 max-w-3xl",
             div { class: "flex flex-wrap items-center justify-between gap-2",
                 h1 { class: "text-2xl font-bold",
-                    if user.read().id.is_empty() { "New User" } else { "Edit User" }
+                    if user.read().id.is_empty() {
+                        {tid!("user-edit-new")}
+                    } else {
+                        {tid!("user-edit-edit")}
+                    }
                 }
                 button {
                     class: "btn btn-ghost btn-sm",
                     onclick: move |_| {
                         navigator().push(Route::UserList {});
                     },
-                    "Back to list"
+                    {tid!("user-edit-back")}
                 }
             }
 
             div { class: "card bg-base-100 card-border",
                 div { class: "card-body",
                     fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                        legend { class: "fieldset-legend", "Account" }
-                        label { class: "label", "Username" }
+                        legend { class: "fieldset-legend", {tid!("user-edit-account")} }
+                        label { class: "label", {tid!("user-edit-username")} }
                         input {
                             class: "input w-full",
                             r#type: "text",
-                            placeholder: "Username",
+                            placeholder: "{tid!(\"user-edit-username-placeholder\")}",
                             value: "{user.read().username}",
                             oninput: move |e| {
                                 let mut t = user.read().clone();
@@ -64,24 +69,22 @@ pub fn UserEdit(id: String) -> Element {
                                 user.set(t);
                             },
                         }
-                        label { class: "label mt-2", "Password" }
+                        label { class: "label mt-2", {tid!("user-edit-password")} }
                         input {
                             class: "input w-full",
                             r#type: "password",
-                            placeholder: "Leave empty to keep current password",
+                            placeholder: "{tid!(\"user-edit-password-placeholder\")}",
                             value: "{password.read()}",
                             oninput: move |e| {
                                 password.set(e.value().clone());
                             },
                         }
-                        p { class: "label text-base-content/60",
-                            "Only set a password when creating a user or changing it."
-                        }
+                        p { class: "label text-base-content/60", {tid!("user-edit-password-hint")} }
                     }
 
                     div { class: "grid gap-4 md:grid-cols-2",
                         fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                            legend { class: "fieldset-legend", "Skin" }
+                            legend { class: "fieldset-legend", {tid!("user-edit-skin")} }
                             select {
                                 class: "select w-full",
                                 value: "{user.read().selected_skin_id.clone().unwrap_or_else(|| \"None\".to_string())}",
@@ -94,7 +97,7 @@ pub fn UserEdit(id: String) -> Element {
                                     t.selected_skin_id = id;
                                     user.set(t);
                                 },
-                                option { value: "None", "None" }
+                                option { value: "None", {tid!("user-edit-none")} }
                                 for skin in skins.cloned().unwrap_or_default() {
                                     option {
                                         value: "{skin.id}",
@@ -121,15 +124,13 @@ pub fn UserEdit(id: String) -> Element {
                                         }
                                     },
                                     None => rsx! {
-                                        p { class: "mt-3 text-sm text-base-content/60",
-                                            "No skin selected."
-                                        }
+                                        p { class: "mt-3 text-sm text-base-content/60", {tid!("user-edit-no-skin")} }
                                     },
                                 }
                             }
                         }
                         fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                            legend { class: "fieldset-legend", "Cape" }
+                            legend { class: "fieldset-legend", {tid!("user-edit-cape")} }
                             select {
                                 class: "select w-full",
                                 value: "{user.read().selected_cape_id.clone().unwrap_or_else(|| \"None\".to_string())}",
@@ -142,7 +143,7 @@ pub fn UserEdit(id: String) -> Element {
                                     t.selected_cape_id = id;
                                     user.set(t);
                                 },
-                                option { value: "None", "None" }
+                                option { value: "None", {tid!("user-edit-none")} }
                                 for cape in capes.cloned().unwrap_or_default() {
                                     option {
                                         value: "{cape.id}",
@@ -155,7 +156,7 @@ pub fn UserEdit(id: String) -> Element {
                     }
 
                     fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
-                        legend { class: "fieldset-legend", "Elytra" }
+                        legend { class: "fieldset-legend", {tid!("user-edit-elytra")} }
                         select {
                             class: "select w-full",
                             value: "{user.read().selected_elytra_id.clone().unwrap_or_else(|| \"None\".to_string())}",
@@ -168,7 +169,7 @@ pub fn UserEdit(id: String) -> Element {
                                 t.selected_elytra_id = id;
                                 user.set(t);
                             },
-                            option { value: "None", "None" }
+                            option { value: "None", {tid!("user-edit-none")} }
                             for elytrum in elytra.cloned().unwrap_or_default() {
                                 option {
                                     value: "{elytrum.id}",
@@ -185,13 +186,13 @@ pub fn UserEdit(id: String) -> Element {
                             onclick: move |_| {
                                 navigator().push(Route::UserList {});
                             },
-                            "Cancel"
+                            {tid!("user-edit-cancel")}
                         }
                         if !user.read().id.is_empty() {
                             button {
                                 class: "btn btn-error btn-outline",
                                 "onclick": "del_user_modal.showModal()",
-                                "Delete"
+                                {tid!("user-edit-delete")}
                             }
                         }
                         button {
@@ -205,7 +206,7 @@ pub fn UserEdit(id: String) -> Element {
                                     nav.push(Route::UserList {});
                                 }
                             },
-                            "Save"
+                            {tid!("user-edit-save")}
                         }
                     }
                 }
@@ -213,13 +214,13 @@ pub fn UserEdit(id: String) -> Element {
 
             dialog { class: "modal", id: "del_user_modal",
                 div { class: "modal-box",
-                    h3 { class: "text-lg font-bold", "Delete user?" }
+                    h3 { class: "text-lg font-bold", {tid!("user-edit-delete-title")} }
                     p { class: "py-4",
-                        "Delete user \"{user.read().username}\"? This cannot be undone."
+                        {tid!("user-edit-delete-message", name : user.read().username.clone())}
                     }
                     div { class: "modal-action",
                         form { method: "dialog",
-                            button { class: "btn", "Abort" }
+                            button { class: "btn", {tid!("user-edit-abort")} }
                             button {
                                 class: "btn btn-error",
                                 onclick: move |evt| {
@@ -231,13 +232,13 @@ pub fn UserEdit(id: String) -> Element {
                                         nav.push(Route::UserList {});
                                     }
                                 },
-                                "Delete"
+                                {tid!("user-edit-delete")}
                             }
                         }
                     }
                 }
                 form { method: "dialog", class: "modal-backdrop",
-                    button { "close" }
+                    button { {tid!("user-edit-close")} }
                 }
             }
         }

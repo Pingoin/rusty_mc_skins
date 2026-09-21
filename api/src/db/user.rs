@@ -125,7 +125,8 @@ impl Db {
             groups.push((id.clone(), "crtr".to_string()));
         }
 
-        let mut qb: QueryBuilder<Sqlite> = QueryBuilder::new("INSERT OR REPLACE INTO groups_users (user_id, group_id) ");
+        let mut qb: QueryBuilder<Sqlite> =
+            QueryBuilder::new("INSERT OR REPLACE INTO groups_users (user_id, group_id) ");
 
         qb.push_values(groups.iter(), |mut b, group| {
             b.push_bind(group.0.clone()).push_bind(group.1.clone());
@@ -188,7 +189,7 @@ pub(crate) struct DbUser {
 }
 
 impl DbUser {
-    pub fn verify_password(&self, password: String) -> Result<(),AppError> {
+    pub fn verify_password(&self, password: String) -> Result<(), AppError> {
         let parsed_hash =
             PasswordHash::new(&self.password_hash).map_err(|e| anyhow::anyhow!("{:?}", e))?;
         Argon2::default()
