@@ -4,16 +4,34 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, Clone, PartialEq, Default, Serialize)]
 pub struct Permissions(u64);
 
-bitflags! {
-    impl Permissions: u64 {
-        // Texture Handling 0-19
-        const TEXTURE_EDIT = 1 << 00;
-        const TEXTURE_USE = 1 << 01;
-        // User and group Handling 20-29
-        const USER_EDIT = 1 << 20;
-        const GROUP_EDIT = 1 << 21;
+macro_rules! define_permissions {
+    ($( $name:ident = $shift:expr ),* $(,)?) => {
+        bitflags! {
+            impl Permissions: u64 {
+                $( const $name = 1 << $shift; )*
+            }
+        }
 
-    }
+        impl Permissions {
+            pub fn all_named() -> Vec<(Self, &'static str)> {
+                vec![$( (Self::$name, stringify!($name)) ),*]
+            }
+
+            pub fn display_name(&self) -> &'static str {
+                $( if *self == Self::$name { return stringify!($name); } )*
+                "UNKNOWN"
+            }
+        }
+    };
+}
+
+// Single source of truth: Name = Bit-Position
+// Texture Handling 0-19, User/Group Handling 20-29
+define_permissions! {
+    TEXTURE_EDIT = 0,
+    TEXTURE_USE = 1,
+    USER_EDIT = 20,
+    GROUP_EDIT = 21,
 }
 
 impl Permissions {

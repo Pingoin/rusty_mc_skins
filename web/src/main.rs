@@ -17,10 +17,8 @@ pub(crate) static USER: GlobalSignal<User> = Signal::global(|| User::default());
 
 pub(crate) fn reload_me() {
     spawn(async move {
-        let user = get_me().await.ok();
-        if let Some(user) = user {
-            *USER.write() = user;
-        }
+        let user = get_me().await.unwrap_or_default();
+        *USER.write() = user;
     });
 }
 
