@@ -93,7 +93,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "api"
-version = "0.6.2-1+1.g352f9eb.modified"
+version = "0.6.2-1+2.g0e10763"
 dependencies = [
  "anyhow",
  "argon2",
@@ -5500,7 +5500,7 @@ dependencies = [
 
 [[package]]
 name = "web"
-version = "0.6.2-1+1.g352f9eb.modified"
+version = "0.6.2-1+2.g0e10763"
 dependencies = [
  "api",
  "dioxus",
