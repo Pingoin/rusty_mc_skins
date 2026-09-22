@@ -3,7 +3,6 @@ use api::{Permissions, User, get_me};
 use components::Navbar;
 use dioxus::prelude::*;
 use dioxus_i18n::tid;
-use git_version::git_version;
 
 mod components;
 mod i18n;
@@ -12,7 +11,8 @@ mod views;
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
-const GIT_VERSION: &str = git_version!();
+// Version kommt direkt aus Cargo.toml – wird per Git-Hook (commit/tag) aus `git describe` synchronisiert.
+const GIT_VERSION: &str = env!("CARGO_PKG_VERSION");
 //const MAIN_CSS: Asset = asset!("/assets/main.scss");
 
 pub(crate) static USER: GlobalSignal<User> = Signal::global(|| User::default());
@@ -85,7 +85,7 @@ fn WebNavbar() -> Element {
                 button { {tid!("alert-close")} }
             }
         }
-        //footer { "test" }
+        footer { "test" }
     }
 }
 

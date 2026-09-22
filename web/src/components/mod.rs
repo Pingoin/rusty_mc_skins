@@ -4,7 +4,7 @@ mod navbar;
 mod new_texture;
 mod texture_card;
 
-pub use icons::{EyeIcon, EyeSlashIcon};
+pub use icons::{EyeIcon, EyeSlashIcon, FlagDeIcon, FlagGbIcon, LanguageIcon};
 pub use login::LoginCard;
 pub use navbar::NavItems;
 pub use navbar::Navbar;

@@ -29,12 +29,17 @@ pub fn LanguageSwitcher() -> Element {
             button {
                 class: if current == german() { "join-item btn btn-sm btn-active" } else { "join-item btn btn-sm" },
                 onclick: move |_| i18n.set_language(german()),
-                "DE"
+                title: "Deutsch",
+                aria_label: "Deutsch",
+                // Flag als Asset-Symbol statt Text
+                crate::components::FlagDeIcon {}
             }
             button {
                 class: if current == english() { "join-item btn btn-sm btn-active" } else { "join-item btn btn-sm" },
                 onclick: move |_| i18n.set_language(english()),
-                "EN"
+                title: "English",
+                aria_label: "English",
+                crate::components::FlagGbIcon {}
             }
         }
     }

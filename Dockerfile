@@ -1,6 +1,9 @@
 FROM rust:1 AS builder
 WORKDIR /app
 
+# git is required for `web/build.rs` (`git describe` -> GIT_VERSION / Cargo.toml sync)
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+
 # Install `dx`
 RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
 RUN cargo binstall dioxus-cli --root /.cargo -y --force
