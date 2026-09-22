@@ -77,7 +77,7 @@ def sanitize_describe(raw: str):
         else:
             v = f"{left}+g{h}"
         if dirty:
-            v += ".modified"
+            v += ""
         return sanitize_for_cargo(v) or v
 
     # tag-distance without g, e.g. "0.6.2-1"
@@ -93,7 +93,7 @@ def sanitize_describe(raw: str):
                 pass
             v = f"{clean.replace('-', '+', 1)}"
             if dirty:
-                v += ".modified"
+                v += ""
             return sanitize_for_cargo(v) or v
 
     # pure hash
@@ -106,12 +106,12 @@ def sanitize_describe(raw: str):
             base = "0.1.0"
         v = f"{base}+g{clean}"
         if dirty:
-            v += ".modified"
+            v += ""
         return sanitize_for_cargo(v) or v
 
     v = clean
     if dirty:
-        v += ".modified"
+        v += ""
     return sanitize_for_cargo(v) or v
 
 def update_cargo_version(path: Path, new_version: str):
