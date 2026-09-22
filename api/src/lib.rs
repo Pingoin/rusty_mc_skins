@@ -8,6 +8,7 @@ mod server;
 pub use server::get_router;
 
 mod app_error;
+pub use app_error::AppError;
 mod users;
 pub use users::*;
 

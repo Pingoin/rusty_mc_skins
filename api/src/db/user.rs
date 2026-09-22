@@ -89,12 +89,29 @@ impl Db {
     pub(crate) async fn get_user_by_name(&self, name: String) -> Result<DbUser, AppError> {
         let user = sqlx::query_as!(DbUser, "select * from users where username = ?", name)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .map_err(|e| match e {
+                sqlx::Error::RowNotFound => AppError::InvalidCredentials,
+                other => other.into(),
+            })?;
 
         Ok(user.into())
     }
 
     pub async fn add_user(&self, mut user: User, password: String) -> Result<User, AppError> {
+        let username = user.username.trim().to_string();
+        if username.is_empty() {
+            return Err(AppError::Other("Username must not be empty".into()));
+        }
+        if password.is_empty() && user.id.is_empty() {
+            return Err(AppError::WeakPassword);
+        }
+        if !password.is_empty() && password.len() < 4 {
+            return Err(AppError::WeakPassword);
+        }
+        // keep trimmed username on the struct
+        user.username = username.clone();
+
         let count = self.get_user_count().await?;
 
         let id = if user.id.len() > 0 {
@@ -102,8 +119,32 @@ impl Db {
         } else {
             uuid::Uuid::new_v4().to_string()
         };
-        let username = user.username.clone();
-        let password_hash = hash_password(password).await?;
+
+        // unique username check (allow same id to update itself)
+        if let Some(row) =
+            sqlx::query!("SELECT id FROM users WHERE username = ?", username)
+                .fetch_optional(&self.pool)
+                .await?
+        {
+            if row.id != id {
+                return Err(AppError::UsernameTaken);
+            }
+        }
+
+        let password_hash = if password.is_empty() {
+            // keep existing hash on update when no password supplied
+            if let Some(existing) =
+                sqlx::query!("SELECT password_hash FROM users WHERE id = ?", id)
+                    .fetch_optional(&self.pool)
+                    .await?
+            {
+                existing.password_hash
+            } else {
+                return Err(AppError::WeakPassword);
+            }
+        } else {
+            hash_password(password).await?
+        };
         let selected_skin_id = user.selected_skin_id.clone();
         let selected_cape_id = user.selected_cape_id.clone();
 

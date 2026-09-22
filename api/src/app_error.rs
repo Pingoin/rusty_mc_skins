@@ -10,6 +10,14 @@ pub enum AppError {
     Database(String),
     #[error("Wrong Password")]
     WrongPassword,
+    #[error("Invalid credentials")]
+    InvalidCredentials,
+    #[error("Username already taken")]
+    UsernameTaken,
+    #[error("Password too short")]
+    WeakPassword,
+    #[error("Password mismatch")]
+    PasswordMismatch,
     #[error("internal server error: {0}")]
     ServerFnError(#[from] ServerFnError),
 }
@@ -33,6 +41,10 @@ impl AsStatusCode for AppError {
             AppError::Other(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::WrongPassword => StatusCode::UNAUTHORIZED,
+            AppError::InvalidCredentials => StatusCode::UNAUTHORIZED,
+            AppError::UsernameTaken => StatusCode::CONFLICT,
+            AppError::WeakPassword => StatusCode::BAD_REQUEST,
+            AppError::PasswordMismatch => StatusCode::BAD_REQUEST,
             AppError::ServerFnError(e) => e.as_status_code(),
         }
     }

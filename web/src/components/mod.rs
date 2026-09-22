@@ -1,8 +1,10 @@
+mod icons;
 mod login;
 mod navbar;
 mod new_texture;
 mod texture_card;
 
+pub use icons::{EyeIcon, EyeSlashIcon};
 pub use login::LoginCard;
 pub use navbar::NavItems;
 pub use navbar::Navbar;

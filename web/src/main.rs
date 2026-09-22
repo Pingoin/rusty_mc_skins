@@ -90,6 +90,6 @@ fn WebNavbar() -> Element {
 }
 
 pub fn show_alert(message: String) {
-    document::eval("document.getElementById('Alert').open()");
-    ALERT_TEXT.write().replace_range(.., &message);
+    *ALERT_TEXT.write() = message;
+    document::eval("document.getElementById('Alert').showModal()");
 }

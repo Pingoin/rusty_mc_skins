@@ -31,7 +31,7 @@ impl User {
 }
 
 #[post("/api/user/create")]
-pub async fn create_user(user: User, password: String) -> Result<User> {
+pub async fn create_user(user: User, password: String) -> Result<User, AppError> {
     let database = db::get_db().await;
     let user = database.add_user(user, password).await?;
     Ok(user)
@@ -100,10 +100,18 @@ pub async fn get_me() -> Result<User> {
 /// This lets us modify the user session, log in/out, and access the current user.
 #[post("/api/user/login", auth: auth::Session)]
 pub async fn login(user: String, password: String) -> Result<(), AppError> {
+    let username = user.trim().to_string();
+    if username.is_empty() || password.is_empty() {
+        return Err(AppError::InvalidCredentials);
+    }
     let database = db::get_db().await;
-    let user = database.get_user_by_name(user).await?;
-    user.verify_password(password)?;
-    let user: User = user.into();
+    let db_user = database.get_user_by_name(username).await?;
+    match db_user.verify_password(password) {
+        Ok(()) => {},
+        Err(AppError::WrongPassword) => return Err(AppError::InvalidCredentials),
+        Err(e) => return Err(e),
+    }
+    let user: User = db_user.into();
     auth.login_user(user.id);
     Ok(())
 }

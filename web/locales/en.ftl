@@ -25,6 +25,18 @@ login-repeat-password-placeholder = Repeat password
 login-register = Register
 login-button-login = Log in
 login-button-register = Register
+login-show-password = Show
+login-hide-password = Hide
+login-error-empty-username = Please enter a username.
+login-error-empty-password = Please enter a password.
+login-error-passwords-mismatch = Passwords do not match.
+login-error-passwords-match = Passwords match.
+login-error-invalid-credentials = Invalid username or password.
+login-error-username-taken = Username already taken.
+login-error-weak-password = Password too short (min. 4 characters).
+login-error-generic = Action failed. Please try again.
+login-hint-password-repeat = Repeat your password to confirm.
+login-password-strength-weak = Too short
 
 ## Texture card
 texture-active = Active
