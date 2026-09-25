@@ -85,7 +85,6 @@ fn WebNavbar() -> Element {
                 button { {tid!("alert-close")} }
             }
         }
-        footer { "test" }
     }
 }
 

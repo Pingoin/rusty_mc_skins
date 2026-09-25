@@ -28,18 +28,6 @@ test-i18n:
 test-api:
     cargo test -p api
 
-# Version aus `git describe` in Cargo.toml schreiben (auch via pre-commit Hook)
-sync-version:
-    python3 scripts/sync_version.py
-
-# Neuen Tag erstellen: Cargo.toml syncen, committen und taggen
-tag version:
-    just sync-version
-    cargo check -p web
-    git add web/Cargo.toml api/Cargo.toml Cargo.lock || true
-    git commit -m "chore(release): {{version}}" || true
-    git tag {{version}}
-
 # Typ-Check des Frontends (Host + Server-Feature)
 check:
     cargo check -p web
