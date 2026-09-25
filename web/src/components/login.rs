@@ -57,7 +57,7 @@ pub fn LoginCard() -> Element {
     let msg_generic = tid!("login-error-generic").to_string();
 
     rsx! {
-        div { class: "card card-border bg-base-100 w-96 shadow-sm",
+        div { class: "card card-border bg-base-100 w-full max-w-96 shadow-sm",
             div { class: "card-body",
                 h2 { class: "card-title", {tid!("login-title")} }
                 form {

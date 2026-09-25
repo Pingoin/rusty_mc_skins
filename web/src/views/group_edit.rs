@@ -17,7 +17,7 @@ pub fn GroupEdit(id: String) -> Element {
     }
 
     rsx!(
-        div { class: "flex flex-col gap-4 max-w-3xl",
+        div { class: "flex flex-col gap-4 max-w-3xl mx-auto w-full",
             div { class: "flex flex-wrap items-center justify-between gap-2",
                 h1 { class: "text-2xl font-bold",
                     if group.read().id.is_empty() {

@@ -9,7 +9,7 @@ mod i18n;
 mod plugins;
 mod views;
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
+const FAVICON: Asset = asset!("/assets/logo-ferris.svg");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
 // Version kommt direkt aus Cargo.toml – wird per Git-Hook (commit/tag) aus `git describe` synchronisiert.
 const GIT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -52,6 +52,7 @@ fn App() -> Element {
     reload_me();
     rsx! {
         // Global app resources
+        document::Title { "Rusty MC Skins" }
         document::Link { rel: "icon", href: FAVICON }
         //document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: TAILWIND }
@@ -59,7 +60,7 @@ fn App() -> Element {
             header {}
 
             Router::<Route> {}
-            footer {
+            footer { class: "mx-auto w-full max-w-5xl px-4 py-4 text-center text-sm opacity-70",
                 {tid!("app-version")}
                 " "
                 {GIT_VERSION}
@@ -74,7 +75,7 @@ fn App() -> Element {
 fn WebNavbar() -> Element {
     rsx! {
         Navbar { NavItems {} }
-        main { Outlet::<Route> {} }
+        main { class: "mx-auto w-full max-w-5xl px-4 py-6", Outlet::<Route> {} }
 
         dialog { class: "modal", id: "Alert",
             div { class: "modal-box",

@@ -29,7 +29,7 @@ pub fn TextureList(tex_type: TextureType) -> Element {
                     }
                 }
             }
-            div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8",
+            div { class: "columns-2 gap-4 sm:columns-3 sm:gap-8 xl:columns-4",
                 for (index, texture) in textures.cloned().unwrap_or_default().into_iter().enumerate() {
                     TextureCard {
                         texture,

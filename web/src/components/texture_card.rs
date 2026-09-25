@@ -17,7 +17,7 @@ pub fn TextureCard(texture: Texture, index: usize, on_change: EventHandler) -> E
     let id = use_signal(|| texture.id.clone());
 
     rsx! {
-        div { class: "indicator",
+        div { class: "indicator mb-4 w-full break-inside-avoid sm:mb-8",
             {
                 if is_set {
                     rsx! {
@@ -27,10 +27,10 @@ pub fn TextureCard(texture: Texture, index: usize, on_change: EventHandler) -> E
                     rsx! {}
                 }
             }
-            div { class: "card bg-base-100 w-96 shadow-sm",
+            div { class: "card bg-base-100 w-full shadow-sm",
                 figure {
                     img {
-                        class: "w-48",
+                        class: "w-full max-w-48",
                         alt: "{texture.skin_name}",
                         src: "data:image/png;base64,{texture.get_preview().unwrap_or_default().as_base64()}",
                     }

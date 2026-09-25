@@ -7,7 +7,7 @@ use crate::{USER, components::LoginCard, reload_me};
 #[component]
 pub fn Home() -> Element {
     rsx! {
-        article {
+        article { class: "flex justify-center",
             {
                 if USER.cloned().anonymous() {
 
@@ -33,7 +33,7 @@ fn UserCard() -> Element {
     let elytra =
         use_resource(|| async move { get_my_texture_type(api::TextureType::Elytra).await.ok() });
     rsx! {
-        div { class: "card card-border bg-base-100 w-96",
+        div { class: "card card-border bg-base-100 w-full max-w-96",
             div { class: "card-body",
                 h2 { class: "card-title", {tid!("home-profile")} }
                 {
