@@ -54,29 +54,39 @@ impl Db {
     }
 
     pub async fn get_user_by_id(&self, id: String) -> Result<User, AppError> {
-        let user = sqlx::query_as!(
-            User,
-            "SELECT
-                u.id,
-                u.username,
-                u.selected_skin_id,
-                u.selected_cape_id,
-                u.selected_elytra_id,
-                u.created,
-                COALESCE(SUM(g.permissions), 0) AS permissions
-            FROM users u
-            LEFT JOIN groups_users gu
-                ON gu.user_id = u.id
-            LEFT JOIN groups g
-                ON g.id = gu.group_id
-            WHERE u.id = ?
-            GROUP BY u.id;",
+        let row = sqlx::query!(
+            "SELECT id, username, selected_skin_id, selected_cape_id, selected_elytra_id, created FROM users WHERE id = ?",
             id
         )
         .fetch_one(&self.pool)
         .await?;
 
-        Ok(user.into())
+        // Berechtigungen muessen per bitweisem OR aggregiert werden:
+        // SUM() erzeugt bei ueberlappenden Bits mehrerer Gruppen
+        // Uebertraege und damit falsche Rechte (z.B. usr=3 + crtr=1 = 4).
+        let perm_rows = sqlx::query!(
+            "SELECT g.permissions AS permissions FROM groups_users gu
+            INNER JOIN groups g ON g.id = gu.group_id
+            WHERE gu.user_id = ?",
+            row.id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mut permissions = Permissions::empty();
+        for perm in perm_rows {
+            permissions |= Permissions::from(perm.permissions);
+        }
+
+        Ok(User {
+            id: row.id,
+            username: row.username,
+            selected_skin_id: row.selected_skin_id,
+            selected_cape_id: row.selected_cape_id,
+            selected_elytra_id: row.selected_elytra_id,
+            permissions,
+            created: row.created,
+        })
     }
 
     pub async fn del_user_by_id(&self, id: String) -> Result<(), AppError> {

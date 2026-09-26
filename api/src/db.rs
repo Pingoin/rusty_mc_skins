@@ -102,6 +102,29 @@ mod tests {
         assert_eq!(db.get_effective_max_textures("ghost".into()).await.unwrap(), 0);
     }
 
+    #[tokio::test]
+    async fn permissions_or_across_overlapping_groups() {
+        // usr (TEXTURE_EDIT|TEXTURE_USE) und crtr (TEXTURE_EDIT) teilen sich
+        // Bit 0: SUM() wuerde daraus faelschlich Bit 2 machen und beide Rechte
+        // verlieren. Das OR muss alle vier Rechte liefern.
+        let db = fresh_db().await;
+        let pool = db.get_pool();
+        sqlx::query!("INSERT INTO users (id, username, password_hash) VALUES ('u1', 'karl', 'x')")
+            .execute(&pool)
+            .await
+            .unwrap();
+        sqlx::query!("INSERT INTO groups_users (user_id, group_id) VALUES ('u1', 'usr'), ('u1', 'crtr'), ('u1', 'adm')")
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let user = db.get_user_by_id("u1".into()).await.unwrap();
+        assert!(user.has_permission(crate::Permissions::TEXTURE_USE));
+        assert!(user.has_permission(crate::Permissions::TEXTURE_EDIT));
+        assert!(user.has_permission(crate::Permissions::USER_EDIT));
+        assert!(user.has_permission(crate::Permissions::GROUP_EDIT));
+    }
+
     #[test]
     fn wire_compat_defaults() {
         // Alte Clients senden weder owner_id noch max_textures.
