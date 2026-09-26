@@ -57,7 +57,7 @@ jobs:
           file: Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=build-${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=build-${{ matrix.platform }}
       - name: Generate artifact attestation
