@@ -1,6 +1,21 @@
+# Build-Kontext schlank halten: schnellerer Upload zum Builder + stabileres Caching.
+# Hinweis: .git wird nicht gebraucht (Version kommt aus Cargo.toml, kein build.rs mit git describe).
+.git
+.github
+.vscode
 **/target
 **/dist
-LICENSES
-LICENSE
+target
+data
 temp
+.env
+*.sqlite
+*.sqlite-journal
+docker-compose.yaml
+justfile
 README.md
+Concept.md
+LICENCE
+LICENSE
+LICENSES
+migrations/*.sql-journal
