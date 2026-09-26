@@ -42,6 +42,7 @@ pub fn GroupList() -> Element {
                                             tr {
                                                 th { {tid!("group-list-col-name")} }
                                                 th { {tid!("group-list-col-id")} }
+                                                th { {tid!("group-list-col-limit")} }
                                                 th { class: "text-right", {tid!("group-list-col-actions")} }
                                             }
                                         }
@@ -53,6 +54,9 @@ pub fn GroupList() -> Element {
                                                     }
                                                     td {
                                                         span { class: "badge badge-ghost badge-sm font-mono", "{group.id}" }
+                                                    }
+                                                    td {
+                                                        span { class: "badge badge-ghost badge-sm font-mono", "{group.max_textures}" }
                                                     }
                                                     td { class: "text-right",
                                                         button {

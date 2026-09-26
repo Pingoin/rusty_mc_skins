@@ -4,8 +4,8 @@
 
 ### Groups
 
-* User: can choose Skin, Elytra and Cape
-* Creator: can Upload/Edit/Delete Textures
+* User: can choose Skin, Elytra and Cape, can upload up to 5 own Textures
+* Creator: can Upload/Edit/Delete Textures (higher Quota)
 * Admin: can manage users and Groups
 
 ## Page Concept

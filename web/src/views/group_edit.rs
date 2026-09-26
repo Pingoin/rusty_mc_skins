@@ -82,6 +82,25 @@ pub fn GroupEdit(id: String) -> Element {
                     }
 
                     fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
+                        legend { class: "fieldset-legend", {tid!("group-edit-quota")} }
+                        label { class: "label", {tid!("group-edit-max-textures")} }
+                        input {
+                            class: "input w-full",
+                            r#type: "number",
+                            min: "0",
+                            value: "{group.read().max_textures}",
+                            oninput: move |e| {
+                                let mut t = group.read().clone();
+                                t.max_textures = e.value().parse().unwrap_or(0).max(0);
+                                group.set(t);
+                            },
+                        }
+                        p { class: "label text-base-content/60",
+                            {tid!("group-edit-max-textures-hint")}
+                        }
+                    }
+
+                    fieldset { class: "fieldset bg-base-200 border-base-300 rounded-box border p-4",
                         legend { class: "fieldset-legend", {tid!("group-edit-members")} }
                         match users.cloned() {
                             None => rsx! {

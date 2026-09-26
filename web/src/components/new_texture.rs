@@ -1,6 +1,15 @@
-use api::{Blob, Texture, TextureType};
+use api::{AppError, Blob, Texture, TextureType};
 use dioxus::prelude::*;
 use dioxus_i18n::tid;
+
+use crate::show_alert;
+
+fn file_stem(name: &str) -> String {
+    match name.rsplit_once('.') {
+        Some((stem, _)) if !stem.is_empty() => stem.to_string(),
+        _ => name.to_string(),
+    }
+}
 
 #[component]
 pub fn NewTexture(tex_type: TextureType, on_change: EventHandler) -> Element {
@@ -21,18 +30,44 @@ pub fn NewTexture(tex_type: TextureType, on_change: EventHandler) -> Element {
         }
         dialog { class: "modal", id: format!("new_tex_modal_{}", tex_type),
             div { class: "modal-box",
+                form { method: "dialog",
+                    button {
+                        class: "btn btn-sm btn-circle btn-ghost absolute right-2 top-2",
+                        aria_label: tid!("new-texture-close").to_string(),
+                        title: tid!("new-texture-close").to_string(),
+                        "✕"
+                    }
+                }
                 div { class: "modal-action",
                     form {
                         onsubmit: move |evt| {
                             evt.prevent_default();
+                            let msg_quota = tid!("new-texture-error-quota").to_string();
+                            let msg_generic = tid!("new-texture-error-generic").to_string();
                             spawn(async move {
                                 let mut t = texture.read().clone();
                                 t.texture_type = tex_type;
-                                api::create_texture(t).await.unwrap();
-                                let _ = document::eval(
-                                    &format!("document.getElementById('new_tex_modal_{}').close()", tex_type),
-                                );
-                                on_change.call(());
+                                t.owner_id = None;
+                                match api::create_texture(t).await {
+                                    Ok(_) => {
+                                        let _ = document::eval(
+                                            &format!("document.getElementById('new_tex_modal_{}').close()", tex_type),
+                                        );
+                                        on_change.call(());
+                                    }
+                                    Err(e) => {
+                                        let msg = match e {
+                                            AppError::QuotaExceeded { limit } => {
+                                                format!("{msg_quota} ({limit})")
+                                            }
+                                            AppError::Unauthorized | AppError::Forbidden => {
+                                                msg_generic.clone()
+                                            }
+                                            _ => format!("{msg_generic}: {e}"),
+                                        };
+                                        show_alert(msg);
+                                    }
+                                }
                             });
                         },
 
@@ -59,11 +94,15 @@ pub fn NewTexture(tex_type: TextureType, on_change: EventHandler) -> Element {
                                 onchange: move |evt| {
                                     async move {
                                         for file in evt.files() {
+                                            let file_name = file_stem(&file.name());
                                             if let Ok(file) = file.read_bytes().await {
                                                 let data = Blob(file.into());
                                                 let mut t = texture.read().clone();
                                                 t.image_data = data;
                                                 let _ = t.compress();
+                                                if t.skin_name.trim().is_empty() {
+                                                    t.skin_name = file_name.clone();
+                                                }
                                                 texture.set(t);
                                             }
                                         }

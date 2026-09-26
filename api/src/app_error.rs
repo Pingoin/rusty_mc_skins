@@ -18,6 +18,12 @@ pub enum AppError {
     WeakPassword,
     #[error("Password mismatch")]
     PasswordMismatch,
+    #[error("Texture quota exceeded (limit: {limit})")]
+    QuotaExceeded { limit: i64 },
+    #[error("Unauthorized")]
+    Unauthorized,
+    #[error("Forbidden")]
+    Forbidden,
     #[error("internal server error: {0}")]
     ServerFnError(#[from] ServerFnError),
 }
@@ -45,6 +51,9 @@ impl AsStatusCode for AppError {
             AppError::UsernameTaken => StatusCode::CONFLICT,
             AppError::WeakPassword => StatusCode::BAD_REQUEST,
             AppError::PasswordMismatch => StatusCode::BAD_REQUEST,
+            AppError::QuotaExceeded { .. } => StatusCode::FORBIDDEN,
+            AppError::Unauthorized => StatusCode::UNAUTHORIZED,
+            AppError::Forbidden => StatusCode::FORBIDDEN,
             AppError::ServerFnError(e) => e.as_status_code(),
         }
     }

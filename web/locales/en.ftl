@@ -45,12 +45,16 @@ texture-delete-title = Delete texture?
 texture-delete-message = Delete texture "{ $name }"? This cannot be undone.
 texture-abort = Cancel
 texture-apply = Apply
+texture-owner = by { $name }
 
 ## New texture dialog
 new-texture-title = New texture
 new-texture-name = Texture name
 new-texture-name-placeholder = Texture name
 new-texture-save = Save
+new-texture-close = Close
+new-texture-error-quota = Texture limit reached. Delete an old texture first to upload a new one.
+new-texture-error-generic = Upload failed. Please try again.
 
 ## Home
 home-profile = Profile
@@ -60,6 +64,7 @@ home-logout = Log out
 texture-list-skins = Skins
 texture-list-capes = Capes
 texture-list-elytra = Elytras
+texture-list-quota = Uploaded textures: { $used } / { $limit }
 
 ## User list
 user-list-title = Users
@@ -99,6 +104,7 @@ group-list-new = New group
 group-list-empty = No groups found.
 group-list-col-name = Group name
 group-list-col-id = ID
+group-list-col-limit = Limit
 group-list-col-actions = Actions
 group-list-edit = Edit
 
@@ -113,6 +119,9 @@ group-edit-permissions = Permissions
 group-edit-permissions-hint = Select which permissions members of this group have.
 group-edit-members = Members
 group-edit-no-users = No users found.
+group-edit-quota = Quota
+group-edit-max-textures = Max. textures per user
+group-edit-max-textures-hint = Members of this group may upload up to this many textures. The highest value across all groups of a user applies. 0 means no uploads.
 group-edit-cancel = Cancel
 group-edit-delete = Delete
 group-edit-save = Save

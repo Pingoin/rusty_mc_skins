@@ -45,12 +45,16 @@ texture-delete-title = Textur löschen?
 texture-delete-message = Textur „{ $name }“ löschen? Dies kann nicht rückgängig gemacht werden.
 texture-abort = Abbrechen
 texture-apply = Übernehmen
+texture-owner = von { $name }
 
 ## Neue Textur Dialog
 new-texture-title = Neue Textur
 new-texture-name = Texturname
 new-texture-name-placeholder = Texturname
 new-texture-save = Speichern
+new-texture-close = Schließen
+new-texture-error-quota = Textur-Limit erreicht. Lösche zuerst eine alte Textur, um eine neue hochzuladen.
+new-texture-error-generic = Hochladen fehlgeschlagen. Bitte erneut versuchen.
 
 ## Startseite
 home-profile = Profil
@@ -60,6 +64,7 @@ home-logout = Abmelden
 texture-list-skins = Skins
 texture-list-capes = Capes
 texture-list-elytra = Elytren
+texture-list-quota = Hochgeladene Texturen: { $used } / { $limit }
 
 ## Benutzerliste
 user-list-title = Benutzer
@@ -99,6 +104,7 @@ group-list-new = Neue Gruppe
 group-list-empty = Keine Gruppen gefunden.
 group-list-col-name = Gruppenname
 group-list-col-id = ID
+group-list-col-limit = Limit
 group-list-col-actions = Aktionen
 group-list-edit = Bearbeiten
 
@@ -113,6 +119,9 @@ group-edit-permissions = Berechtigungen
 group-edit-permissions-hint = Wähle, welche Berechtigungen Mitglieder dieser Gruppe haben.
 group-edit-members = Mitglieder
 group-edit-no-users = Keine Benutzer gefunden.
+group-edit-quota = Kontingent
+group-edit-max-textures = Max. Texturen pro Benutzer
+group-edit-max-textures-hint = Mitglieder dieser Gruppe dürfen bis zu so viele Texturen hochladen. Es gilt jeweils der höchste Wert aller Gruppen eines Benutzers. 0 bedeutet keine Uploads.
 group-edit-cancel = Abbrechen
 group-edit-delete = Löschen
 group-edit-save = Speichern

@@ -1,6 +1,6 @@
 [package]
 name = "api"
-version = "0.6.2-1-5"
+version = "0.6.4-1"
 edition = "2024"
 
 [dependencies]
@@ -25,6 +25,10 @@ thiserror = { workspace = true }
 axum_session = { workspace = true, optional = true }
 axum_session_auth = { workspace = true, optional = true }
 axum_session_sqlx = { workspace = true, features = ["sqlite"], optional = true }
+
+
+[dev-dependencies]
+serde_json = { workspace = true }
 
 
 [features]

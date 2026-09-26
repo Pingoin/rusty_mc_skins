@@ -14,10 +14,48 @@ use std::string::ToString;
 use crate::auth;
 #[cfg(feature = "server")]
 use crate::db;
+#[cfg(feature = "server")]
+use crate::Permissions;
+use crate::app_error::AppError;
 
-#[post("/api/texture/create")]
-pub async fn create_texture(texture: Texture) -> Result<Texture> {
+#[post("/api/texture/create", auth: auth::Session)]
+pub async fn create_texture(mut texture: Texture) -> Result<Texture, AppError> {
+    let user = auth
+        .current_user
+        .filter(|u| !u.anonymous())
+        .ok_or(AppError::Unauthorized)?;
+    if !user.has_permission(Permissions::TEXTURE_EDIT) {
+        return Err(AppError::Forbidden);
+    }
     let database = db::get_db().await;
+
+    // Update einer bereits existierenden Textur: keine Quota-Anrechnung,
+    // aber nur der Besitzer (oder privilegierte Nutzer) darf sie ersetzen.
+    if !texture.id.is_empty()
+        && let Ok(existing) = database.get_texture_by_id(texture.id.clone()).await
+    {
+        let is_owner = existing.owner_id.as_deref() == Some(user.id.as_str());
+        let is_privileged = user.has_permission(Permissions::USER_EDIT)
+            || user.has_permission(Permissions::GROUP_EDIT);
+        if !is_owner && !is_privileged {
+            return Err(AppError::Forbidden);
+        }
+        // Besitzer bleibt erhalten (verwaiste Alt-Texturen werden adoptiert).
+        texture.owner_id = existing.owner_id.or(Some(user.id.clone()));
+        return Ok(database.add_texture(texture).await?);
+    }
+
+    // Neuer Upload: gruppenspezifische Quota pruefen.
+    let limit = database
+        .get_effective_max_textures(user.id.clone())
+        .await?;
+    let used = database.count_textures_by_owner(user.id.clone()).await?;
+    if used >= limit {
+        return Err(AppError::QuotaExceeded { limit });
+    }
+
+    texture.id = String::new();
+    texture.owner_id = Some(user.id.clone());
     let texture = database.add_texture(texture).await?;
     Ok(texture)
 }
@@ -38,10 +76,25 @@ pub async fn get_texture_by_id(id: String) -> Result<Texture> {
     Ok(textures)
 }
 
-#[post("/api/texture/{id}/del")]
-pub async fn del_texture_by_id(id: String) -> Result<()> {
-    // Optionally, retrieve user data from the database
+#[post("/api/texture/{id}/del", auth: auth::Session)]
+pub async fn del_texture_by_id(id: String) -> Result<(), AppError> {
+    let user = auth
+        .current_user
+        .filter(|u| !u.anonymous())
+        .ok_or(AppError::Unauthorized)?;
+    if !user.has_permission(Permissions::TEXTURE_EDIT) {
+        return Err(AppError::Forbidden);
+    }
     let database = db::get_db().await;
+    // Fremde Texturen duerfen nur privilegierte Nutzer loeschen.
+    if let Ok(texture) = database.get_texture_by_id(id.clone()).await
+        && let Some(owner) = texture.owner_id
+        && owner != user.id
+        && !user.has_permission(Permissions::USER_EDIT)
+        && !user.has_permission(Permissions::GROUP_EDIT)
+    {
+        return Err(AppError::Forbidden);
+    }
     database.del_texture_by_id(id).await?;
     Ok(())
 }
@@ -65,6 +118,29 @@ pub async fn get_textures_by_type(tex_type: String) -> Result<Vec<Texture>> {
     let database = db::get_db().await;
     let tex = database.get_textures_by_type(tex_type.into()).await?;
     Ok(tex)
+}
+
+#[get("/api/texture/owner/{owner_id}")]
+pub async fn get_textures_by_owner(owner_id: String) -> Result<Vec<Texture>, AppError> {
+    let database = db::get_db().await;
+    let tex = database.get_textures_by_owner(owner_id).await?;
+    Ok(tex)
+}
+
+/// Eigene Textur-Quota: bereits hochgeladene Anzahl + wirksames Gruppen-Limit
+/// (Maximum ueber alle Gruppen des Nutzers).
+#[post("/api/texture/quota", auth: auth::Session)]
+pub async fn get_my_quota() -> Result<TextureQuota, AppError> {
+    let user = auth
+        .current_user
+        .filter(|u| !u.anonymous())
+        .ok_or(AppError::Unauthorized)?;
+    let database = db::get_db().await;
+    let used = database.count_textures_by_owner(user.id.clone()).await?;
+    let limit = database
+        .get_effective_max_textures(user.id.clone())
+        .await?;
+    Ok(TextureQuota { used, limit })
 }
 
 #[derive(
@@ -113,6 +189,16 @@ pub struct Texture {
     pub skin_name: String,
     pub texture_type: TextureType,
     pub image_data: Blob,
+    /// Benutzer-ID des Uploaders. `None` bei Alt-Texturen ohne Zuordnung.
+    #[serde(default)]
+    pub owner_id: Option<String>,
+}
+
+/// Verbrauchte/belegte Quota eines Nutzers.
+#[derive(Debug, Deserialize, Clone, Serialize, PartialEq, Default)]
+pub struct TextureQuota {
+    pub used: i64,
+    pub limit: i64,
 }
 
 impl Texture {

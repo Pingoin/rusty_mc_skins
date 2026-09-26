@@ -5,12 +5,35 @@ use crate::db;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Clone, PartialEq, Default, Serialize)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Serialize)]
 pub struct Group {
     pub id: String,
     pub group_name: String,
     pub permissions: Permissions,
+    /// Maximale Anzahl an Texturen, die ein Mitglied hochladen darf.
+    /// Wirksam ist jeweils das Maximum ueber alle Gruppen des Nutzers.
+    #[serde(default = "default_max_textures")]
+    pub max_textures: i64,
     pub created: Option<String>,
+}
+
+/// Standard-Limit fuer neu angelegte Gruppen.
+pub const DEFAULT_MAX_TEXTURES: i64 = 5;
+
+fn default_max_textures() -> i64 {
+    DEFAULT_MAX_TEXTURES
+}
+
+impl Default for Group {
+    fn default() -> Self {
+        Self {
+            id: String::new(),
+            group_name: String::new(),
+            permissions: Permissions::default(),
+            max_textures: DEFAULT_MAX_TEXTURES,
+            created: None,
+        }
+    }
 }
 
 #[post("/api/group/create")]

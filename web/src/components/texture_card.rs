@@ -2,10 +2,15 @@ use api::{Permissions, Texture, TextureType, del_texture_by_id, set_texture};
 use dioxus::prelude::*;
 use dioxus_i18n::tid;
 
-use crate::{USER, has_permission, reload_me};
+use crate::{USER, has_permission, reload_me, show_alert};
 
 #[component]
-pub fn TextureCard(texture: Texture, index: usize, on_change: EventHandler) -> Element {
+pub fn TextureCard(
+    texture: Texture,
+    index: usize,
+    on_change: EventHandler,
+    owner_name: Option<String>,
+) -> Element {
     let is_set = match texture.texture_type {
         TextureType::Skin => USER.cloned().selected_skin_id == Some(texture.id.clone()),
         TextureType::Cape => USER.cloned().selected_cape_id == Some(texture.id.clone()),
@@ -37,6 +42,11 @@ pub fn TextureCard(texture: Texture, index: usize, on_change: EventHandler) -> E
                 }
                 div { class: "card-body",
                     h2 { class: "card-title", {texture.skin_name.clone()} }
+                    if let Some(name) = owner_name.clone() {
+                        p { class: "text-xs text-base-content/60",
+                            {tid!("texture-owner", name : name)}
+                        }
+                    }
                     div { class: "card-actions justify-end",
                         if has_permission(Permissions::TEXTURE_EDIT) {
                             button {
@@ -61,12 +71,18 @@ pub fn TextureCard(texture: Texture, index: usize, on_change: EventHandler) -> E
                                                     evt.prevent_default();
                                                     let value = id.clone();
                                                     async move {
-                                                        let _ = del_texture_by_id(value.cloned()).await;
-                                                        on_change.call(());
-                                                        let _ = document::eval(
-                                                            format!("document.getElementById('del_modal_{}').close()", index)
-                                                                .as_str(),
-                                                        );
+                                                        match del_texture_by_id(value.cloned()).await {
+                                                            Ok(_) => {
+                                                                on_change.call(());
+                                                                let _ = document::eval(
+                                                                    format!("document.getElementById('del_modal_{}').close()", index)
+                                                                        .as_str(),
+                                                                );
+                                                            }
+                                                            Err(e) => {
+                                                                show_alert(e.to_string());
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {tid!("texture-delete")}

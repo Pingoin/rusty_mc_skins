@@ -18,12 +18,14 @@ impl Db {
             TextureType::Elytra => "Elytra",
         };
         let image_data = texture.image_data.clone();
+        let owner_id = texture.owner_id.clone();
         query!(
-            "INSERT OR REPLACE INTO textures (id, skin_name, texture_type, image_data) VALUES (?1, ?2, ?3, ?4)",
+            "INSERT OR REPLACE INTO textures (id, skin_name, texture_type, image_data, owner_id) VALUES (?1, ?2, ?3, ?4, ?5)",
             id,
             name,
             texture_type,
             image_data.0,
+            owner_id,
         )
         .execute(&self.pool)
         .await?;
@@ -32,9 +34,10 @@ impl Db {
     }
 
     pub async fn get_textures(&self) -> Result<Vec<Texture>, AppError> {
-        let rows = query!("SELECT id, skin_name, texture_type, image_data FROM textures")
-            .fetch_all(&self.pool)
-            .await?;
+        let rows =
+            query!("SELECT id, skin_name, texture_type, image_data, owner_id FROM textures")
+                .fetch_all(&self.pool)
+                .await?;
 
         let textures = rows
             .into_iter()
@@ -48,6 +51,7 @@ impl Db {
                     _ => TextureType::Skin, // fallback or handle error
                 },
                 image_data: Blob(row.image_data),
+                owner_id: row.owner_id,
             })
             .collect();
 
@@ -64,7 +68,7 @@ impl Db {
     pub async fn get_skin_by_user_id(&self, id: String) -> Result<Texture, AppError> {
         let texture = sqlx::query_as!(
             Texture,
-            "SELECT textures.id AS id,skin_name,texture_type,image_data 
+            "SELECT textures.id AS id,skin_name,texture_type,image_data,owner_id
             FROM users INNER JOIN textures 
             ON textures.id = users.selected_skin_id 
             WHERE users.id = ? ",
@@ -77,7 +81,7 @@ impl Db {
     pub async fn get_cape_by_user_id(&self, id: String) -> Result<Texture, AppError> {
         let texture = sqlx::query_as!(
             Texture,
-            "SELECT textures.id AS id,skin_name,texture_type,image_data 
+            "SELECT textures.id AS id,skin_name,texture_type,image_data,owner_id
             FROM users INNER JOIN textures 
             ON textures.id = users.selected_cape_id 
             WHERE users.id = ? ",
@@ -91,7 +95,7 @@ impl Db {
     pub async fn get_elytra_by_user_id(&self, id: String) -> Result<Texture, AppError> {
         let texture = sqlx::query_as!(
             Texture,
-            "SELECT textures.id AS id,skin_name,texture_type,image_data 
+            "SELECT textures.id AS id,skin_name,texture_type,image_data,owner_id
             FROM users INNER JOIN textures 
             ON textures.id = users.selected_elytra_id 
             WHERE users.id = ? ",
@@ -118,6 +122,29 @@ impl Db {
             Texture,
             "select * from textures where texture_type = ?",
             tex_type
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(textures)
+    }
+
+    pub async fn count_textures_by_owner(&self, owner_id: String) -> Result<i64, AppError> {
+        let count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM textures WHERE owner_id = ?")
+                .bind(owner_id)
+                .fetch_one(&self.pool)
+                .await?;
+        Ok(count)
+    }
+
+    pub async fn get_textures_by_owner(
+        &self,
+        owner_id: String,
+    ) -> Result<Vec<Texture>, AppError> {
+        let textures = sqlx::query_as!(
+            Texture,
+            "select * from textures where owner_id = ?",
+            owner_id
         )
         .fetch_all(&self.pool)
         .await?;
