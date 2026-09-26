@@ -25,11 +25,16 @@ RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/ca
 ENV PATH="/.cargo/bin:$PATH"
 
 # --- Dependency-Layer: nur Manifeste kopieren, damit `cargo fetch` gecacht bleibt ---
-# `cargo fetch` braucht nur die Tomls (keine Quellen) und wärmt die Registry vor.
+# `cargo` braucht für die Workspace-Auflösung vorhandene Targets -> minimale
+# Dummy-Quellen, die danach wieder entfernt werden (echter Code kommt per COPY).
 COPY Cargo.toml Cargo.lock ./
 COPY api/Cargo.toml ./api/Cargo.toml
 COPY web/Cargo.toml ./web/Cargo.toml
-RUN cargo fetch --locked
+RUN mkdir -p api/src web/src \
+    && echo 'pub fn __placeholder() {}' > api/src/lib.rs \
+    && echo 'fn main() {}' > web/src/main.rs \
+    && cargo fetch --locked \
+    && rm -rf api/src web/src
 
 # --- Echter Build: erst ab hier invalidiert App-Code den Cache ---
 COPY . .
