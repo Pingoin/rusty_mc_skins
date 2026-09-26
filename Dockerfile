@@ -3,7 +3,7 @@
 # Reihenfolge-Prinzip: selten ändernde Schritte (Toolchain, dx, Deps) zuerst,
 # schnell ändernder App-Code zuletzt.
 
-ARG RUST_VERSION=1-bookworm
+ARG RUST_VERSION=1-trixie
 ARG DX_VERSION=0.7
 ARG SQLX_VERSION=0.9
 
@@ -55,7 +55,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     dx bundle --web --release \
     && mkdir -p /out/app && cp -r /app/target/dx/web/release/web/. /out/app/
 
-FROM debian:bookworm-slim AS runtime
+FROM debian:trixie-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /out/app /usr/local/app
