@@ -31,7 +31,7 @@ pub fn LanguageSwitcher() -> Element {
                 onclick: move |_| i18n.set_language(german()),
                 title: "Deutsch",
                 aria_label: "Deutsch",
-                // Flag als Asset-Symbol statt Text
+                // Flag as an asset symbol instead of text
                 crate::components::FlagDeIcon {}
             }
             button {

@@ -11,7 +11,7 @@ mod views;
 
 const FAVICON: Asset = asset!("/assets/logo-ferris.svg");
 const TAILWIND: Asset = asset!("/assets/tailwind.css");
-// Version kommt direkt aus Cargo.toml – wird per Git-Hook (commit/tag) aus `git describe` synchronisiert.
+// Version comes straight from Cargo.toml – synced from `git describe` via a Git hook (commit/tag).
 const GIT_VERSION: &str = env!("CARGO_PKG_VERSION");
 //const MAIN_CSS: Asset = asset!("/assets/main.scss");
 

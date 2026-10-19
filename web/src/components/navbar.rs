@@ -13,7 +13,7 @@ pub fn Navbar(children: Element) -> Element {
                 img { src: LOGO, alt: "Rusty MC Skins", class: "h-8 w-8" }
                 span { class: "font-bold whitespace-nowrap hidden sm:inline", "Rusty MC Skins" }
             }
-            // Horizontales Menü ab lg, darunter Hamburger-Dropdown
+            // Horizontal menu from lg upwards, hamburger dropdown below that
             ul { class: "menu menu-horizontal hidden lg:flex bg-base-200 rounded-box",
                 {children.clone()}
             }

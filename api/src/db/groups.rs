@@ -42,8 +42,8 @@ impl Db {
         Ok(exists.is_some())
     }
 
-    /// Wirksames Textur-Limit eines Nutzers: Maximum ueber alle seine Gruppen.
-    /// Nutzer ohne Gruppe duerfen nichts hochladen (0).
+    /// Effective texture limit of a user: maximum across all of their groups.
+    /// Users without a group may not upload anything (0).
     pub async fn get_effective_max_textures(
         &self,
         user_id: String,

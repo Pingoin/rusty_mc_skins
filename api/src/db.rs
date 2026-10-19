@@ -61,8 +61,10 @@ mod tests {
         assert_eq!(by_id["adm"].max_textures, 1000);
         assert_eq!(by_id["crtr"].max_textures, 25);
         assert_eq!(by_id["usr"].max_textures, 5);
-        // usr-Mitglieder duerfen hochladen (TEXTURE_EDIT = Bit 0)
+        // usr members may upload (TEXTURE_EDIT = bit 0)
         assert!(by_id["usr"].permissions.contains(crate::Permissions::TEXTURE_EDIT));
+        // The adm group got TEXTURE_ADOPT (bit 2) from the migration.
+        assert!(by_id["adm"].permissions.contains(crate::Permissions::TEXTURE_ADOPT));
     }
 
     #[tokio::test]
@@ -70,7 +72,7 @@ mod tests {
         let db = fresh_db().await;
         let pool = db.get_pool();
 
-        // Nutzer Karl ist in usr (0) und crtr (25) -> wirksam 25.
+        // User Karl is in usr (0) and crtr (25) -> effective limit 25.
         sqlx::query!("INSERT INTO users (id, username, password_hash) VALUES ('u1', 'karl', 'x')")
             .execute(&pool)
             .await
@@ -98,15 +100,15 @@ mod tests {
         assert_eq!(mine.len(), 1);
         assert_eq!(mine[0].id, saved.id);
 
-        // Nutzer ohne Gruppe darf nichts hochladen.
+        // A user without a group may not upload anything.
         assert_eq!(db.get_effective_max_textures("ghost".into()).await.unwrap(), 0);
     }
 
     #[tokio::test]
     async fn permissions_or_across_overlapping_groups() {
-        // usr (TEXTURE_EDIT|TEXTURE_USE) und crtr (TEXTURE_EDIT) teilen sich
-        // Bit 0: SUM() wuerde daraus faelschlich Bit 2 machen und beide Rechte
-        // verlieren. Das OR muss alle vier Rechte liefern.
+        // usr (TEXTURE_EDIT|TEXTURE_USE) and crtr (TEXTURE_EDIT) share bit 0:
+        // SUM() would wrongly turn that into bit 2 and both rights would be
+        // lost. The OR must deliver all four permissions.
         let db = fresh_db().await;
         let pool = db.get_pool();
         sqlx::query!("INSERT INTO users (id, username, password_hash) VALUES ('u1', 'karl', 'x')")
@@ -127,7 +129,7 @@ mod tests {
 
     #[test]
     fn wire_compat_defaults() {
-        // Alte Clients senden weder owner_id noch max_textures.
+        // Old clients send neither owner_id nor max_textures.
         let tex: crate::Texture =
             serde_json::from_str(r#"{"id":"","skin_name":"x","texture_type":"Skin","image_data":""}"#)
                 .expect("texture default owner");

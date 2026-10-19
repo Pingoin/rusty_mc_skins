@@ -60,8 +60,9 @@ impl Db {
 
     pub async fn get_texture_by_id(&self, id: String) -> Result<Texture, AppError> {
         let texture = sqlx::query_as!(Texture, "select * from textures where id = ?", id)
-            .fetch_one(&self.pool)
-            .await?;
+            .fetch_optional(&self.pool)
+            .await?
+            .ok_or(AppError::NotFound)?;
         Ok(texture)
     }
 

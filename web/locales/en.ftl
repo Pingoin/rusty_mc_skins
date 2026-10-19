@@ -45,6 +45,9 @@ texture-delete-title = Delete texture?
 texture-delete-message = Delete texture "{ $name }"? This cannot be undone.
 texture-abort = Cancel
 texture-apply = Apply
+texture-adopt = Take ownership
+texture-adopt-title = Take ownership of the texture?
+texture-adopt-message = The texture "{ $name }" will belong to you from now on. You will then be able to delete it as well.
 texture-owner = by { $name }
 
 ## New texture dialog
