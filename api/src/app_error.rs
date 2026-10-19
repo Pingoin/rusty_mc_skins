@@ -24,6 +24,8 @@ pub enum AppError {
     Unauthorized,
     #[error("Forbidden")]
     Forbidden,
+    #[error("Not found")]
+    NotFound,
     #[error("internal server error: {0}")]
     ServerFnError(#[from] ServerFnError),
 }
@@ -54,6 +56,7 @@ impl AsStatusCode for AppError {
             AppError::QuotaExceeded { .. } => StatusCode::FORBIDDEN,
             AppError::Unauthorized => StatusCode::UNAUTHORIZED,
             AppError::Forbidden => StatusCode::FORBIDDEN,
+            AppError::NotFound => StatusCode::NOT_FOUND,
             AppError::ServerFnError(e) => e.as_status_code(),
         }
     }

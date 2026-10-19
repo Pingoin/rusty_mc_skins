@@ -45,6 +45,9 @@ texture-delete-title = Textur löschen?
 texture-delete-message = Textur „{ $name }“ löschen? Dies kann nicht rückgängig gemacht werden.
 texture-abort = Abbrechen
 texture-apply = Übernehmen
+texture-adopt = Besitz übernehmen
+texture-adopt-title = Textur übernehmen?
+texture-adopt-message = Die Textur „{ $name }“ gehört dir ab jetzt. Du kannst sie dann auch löschen.
 texture-owner = von { $name }
 
 ## Neue Textur Dialog

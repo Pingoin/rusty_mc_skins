@@ -30,6 +30,7 @@ macro_rules! define_permissions {
 define_permissions! {
     TEXTURE_EDIT = 0,
     TEXTURE_USE = 1,
+    TEXTURE_ADOPT = 2,
     USER_EDIT = 20,
     GROUP_EDIT = 21,
 }
@@ -70,5 +71,13 @@ mod tests {
         dbg!(user_perm);
         dbg!(creator_perm);
         dbg!(admin_perm);
+    }
+
+    #[test]
+    fn test_texture_adopt_bit_is_wired_into_migration() {
+        // The migration 20261019120000_texture_adopt_permission.sql writes this
+        // bit as a fixed integer value into the groups table. If the bit
+        // position ever shifts, the admin group silently stops getting the right.
+        assert_eq!(Permissions::TEXTURE_ADOPT.bits(), 4);
     }
 }

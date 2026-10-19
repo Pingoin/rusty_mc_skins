@@ -61,9 +61,9 @@ impl Db {
         .fetch_one(&self.pool)
         .await?;
 
-        // Berechtigungen muessen per bitweisem OR aggregiert werden:
-        // SUM() erzeugt bei ueberlappenden Bits mehrerer Gruppen
-        // Uebertraege und damit falsche Rechte (z.B. usr=3 + crtr=1 = 4).
+        // Permissions must be aggregated with a bitwise OR:
+        // SUM() produces carries for overlapping bits of several groups and
+        // therefore wrong permissions (e.g. usr=3 + crtr=1 = 4).
         let perm_rows = sqlx::query!(
             "SELECT g.permissions AS permissions FROM groups_users gu
             INNER JOIN groups g ON g.id = gu.group_id

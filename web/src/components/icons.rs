@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-// Assets werden über `asset!` gebundelt – garantiert dass die SVG-Files im Build vorhanden sind
+// Assets are bundled via `asset!` – guarantees that the SVG files are present in the build
 const _EYE_ASSET: Asset = asset!("/assets/icons/eye.svg");
 const _EYE_SLASH_ASSET: Asset = asset!("/assets/icons/eye-slash.svg");
 const _FLAG_DE_ASSET: Asset = asset!("/assets/icons/flag-de.svg");
@@ -8,7 +8,7 @@ const _FLAG_GB_ASSET: Asset = asset!("/assets/icons/flag-gb.svg");
 const _LANGUAGE_ASSET: Asset = asset!("/assets/icons/language.svg");
 
 /// Eye icon (password visible) – SVG-Daten liegen in `web/assets/icons/eye.svg`
-/// Inline gerendert damit `stroke="currentColor"` das daisyUI `text-base-content` erbt.
+/// Rendered inline so that `stroke="currentColor"` inherits the daisyUI `text-base-content`.
 #[component]
 pub fn EyeIcon() -> Element {
     rsx! {

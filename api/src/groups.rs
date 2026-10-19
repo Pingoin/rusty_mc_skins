@@ -10,14 +10,14 @@ pub struct Group {
     pub id: String,
     pub group_name: String,
     pub permissions: Permissions,
-    /// Maximale Anzahl an Texturen, die ein Mitglied hochladen darf.
-    /// Wirksam ist jeweils das Maximum ueber alle Gruppen des Nutzers.
+    /// Maximum number of textures a member may upload.
+    /// The effective limit is the maximum across all of the user's groups.
     #[serde(default = "default_max_textures")]
     pub max_textures: i64,
     pub created: Option<String>,
 }
 
-/// Standard-Limit fuer neu angelegte Gruppen.
+/// Default limit for newly created groups.
 pub const DEFAULT_MAX_TEXTURES: i64 = 5;
 
 fn default_max_textures() -> i64 {

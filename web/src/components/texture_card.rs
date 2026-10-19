@@ -1,4 +1,4 @@
-use api::{Permissions, Texture, TextureType, del_texture_by_id, set_texture};
+use api::{Permissions, Texture, TextureType, adopt_texture, del_texture_by_id, set_texture};
 use dioxus::prelude::*;
 use dioxus_i18n::tid;
 
@@ -20,6 +20,18 @@ pub fn TextureCard(
     let set_me = set_texture;
     let me = use_signal(|| texture.clone());
     let id = use_signal(|| texture.id.clone());
+
+    // Deleting and taking ownership are enforced server-side via TEXTURE_ADOPT
+    // ("manage foreign textures"); these flags only hide the buttons from
+    // users who would be rejected by the API anyway.
+    let current_user = USER.cloned();
+    let is_own = texture.owner_id.as_deref() == Some(current_user.id.as_str());
+    let can_delete = if is_own {
+        has_permission(Permissions::TEXTURE_EDIT)
+    } else {
+        has_permission(Permissions::TEXTURE_ADOPT)
+    };
+    let can_adopt = has_permission(Permissions::TEXTURE_ADOPT) && !is_own;
 
     rsx! {
         div { class: "indicator mb-4 w-full break-inside-avoid sm:mb-8",
@@ -48,7 +60,51 @@ pub fn TextureCard(
                         }
                     }
                     div { class: "card-actions justify-end",
-                        if has_permission(Permissions::TEXTURE_EDIT) {
+                        if can_adopt {
+                            button {
+                                class: "btn btn-warning",
+                                "onclick": format!("adopt_modal_{}.showModal()", index),
+                                {tid!("texture-adopt")}
+                            }
+                            dialog {
+                                class: "modal",
+                                id: format!("adopt_modal_{}", index),
+                                div { class: "modal-box",
+                                    h3 { class: "text-lg font-bold", {tid!("texture-adopt-title")} }
+                                    p { class: "py-4",
+                                        {tid!("texture-adopt-message", name : texture.skin_name.clone())}
+                                    }
+                                    div { class: "modal-action",
+                                        form { method: "dialog",
+                                            button { class: "btn", {tid!("texture-abort")} }
+                                            button {
+                                                class: "btn btn-warning",
+                                                onclick: move |evt| {
+                                                    evt.prevent_default();
+                                                    let value = id.clone();
+                                                    async move {
+                                                        match adopt_texture(value.cloned()).await {
+                                                            Ok(_) => {
+                                                                on_change.call(());
+                                                                let _ = document::eval(
+                                                                    format!("document.getElementById('adopt_modal_{}').close()", index)
+                                                                        .as_str(),
+                                                                );
+                                                            }
+                                                            Err(e) => {
+                                                                show_alert(e.to_string());
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {tid!("texture-adopt")}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if can_delete {
                             button {
                                 class: "btn btn-error",
                                 "onclick": format!("del_modal_{}.showModal()", index),

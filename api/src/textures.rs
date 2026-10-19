@@ -29,23 +29,23 @@ pub async fn create_texture(mut texture: Texture) -> Result<Texture, AppError> {
     }
     let database = db::get_db().await;
 
-    // Update einer bereits existierenden Textur: keine Quota-Anrechnung,
-    // aber nur der Besitzer (oder privilegierte Nutzer) darf sie ersetzen.
+    // Update of an existing texture: no quota is consumed, but only the owner
+    // (or a user with TEXTURE_ADOPT) may replace it.
     if !texture.id.is_empty()
         && let Ok(existing) = database.get_texture_by_id(texture.id.clone()).await
     {
         let is_owner = existing.owner_id.as_deref() == Some(user.id.as_str());
-        let is_privileged = user.has_permission(Permissions::USER_EDIT)
-            || user.has_permission(Permissions::GROUP_EDIT);
-        if !is_owner && !is_privileged {
+        // Replacing a foreign texture requires TEXTURE_ADOPT ("manage foreign textures").
+        let can_manage = user.has_permission(Permissions::TEXTURE_ADOPT);
+        if !is_owner && !can_manage {
             return Err(AppError::Forbidden);
         }
-        // Besitzer bleibt erhalten (verwaiste Alt-Texturen werden adoptiert).
+        // The owner is kept (orphaned legacy textures get adopted here).
         texture.owner_id = existing.owner_id.or(Some(user.id.clone()));
         return Ok(database.add_texture(texture).await?);
     }
 
-    // Neuer Upload: gruppenspezifische Quota pruefen.
+    // New upload: check the per-group quota.
     let limit = database
         .get_effective_max_textures(user.id.clone())
         .await?;
@@ -82,21 +82,46 @@ pub async fn del_texture_by_id(id: String) -> Result<(), AppError> {
         .current_user
         .filter(|u| !u.anonymous())
         .ok_or(AppError::Unauthorized)?;
-    if !user.has_permission(Permissions::TEXTURE_EDIT) {
-        return Err(AppError::Forbidden);
-    }
     let database = db::get_db().await;
-    // Fremde Texturen duerfen nur privilegierte Nutzer loeschen.
-    if let Ok(texture) = database.get_texture_by_id(id.clone()).await
-        && let Some(owner) = texture.owner_id
-        && owner != user.id
-        && !user.has_permission(Permissions::USER_EDIT)
-        && !user.has_permission(Permissions::GROUP_EDIT)
-    {
+    // Fail-closed: existence and ownership must be established, otherwise no
+    // deletion. Own textures: TEXTURE_EDIT. Foreign textures and legacy
+    // textures without owner_id (NULL): TEXTURE_ADOPT ("manage foreign textures").
+    let texture = database.get_texture_by_id(id.clone()).await?;
+    let is_owner = texture.owner_id.as_deref() == Some(user.id.as_str());
+    let allowed = if is_owner {
+        user.has_permission(Permissions::TEXTURE_EDIT)
+    } else {
+        user.has_permission(Permissions::TEXTURE_ADOPT)
+    };
+    if !allowed {
         return Err(AppError::Forbidden);
     }
     database.del_texture_by_id(id).await?;
     Ok(())
+}
+
+/// Transfer a texture to the current user. Holders of TEXTURE_ADOPT can claim
+/// legacy textures without an owner_id and take over textures that were
+/// previously unassigned (or belong to someone else).
+#[post("/api/texture/{id}/adopt", auth: auth::Session)]
+pub async fn adopt_texture(id: String) -> Result<Texture, AppError> {
+    let user = auth
+        .current_user
+        .filter(|u| !u.anonymous())
+        .ok_or(AppError::Unauthorized)?;
+    // Taking ownership changes the owner and with it who may delete the
+    // texture: that is what TEXTURE_ADOPT ("manage foreign textures") is for.
+    if !user.has_permission(Permissions::TEXTURE_ADOPT) {
+        return Err(AppError::Forbidden);
+    }
+    let database = db::get_db().await;
+    let mut texture = database.get_texture_by_id(id.clone()).await?;
+    if texture.owner_id.as_deref() == Some(user.id.as_str()) {
+        return Ok(texture);
+    }
+    // add_texture writes via INSERT OR REPLACE and keeps id and image data.
+    texture.owner_id = Some(user.id.clone());
+    database.add_texture(texture).await
 }
 
 #[get("/api/texture/my/{tex_type}", auth: auth::Session)]
@@ -127,8 +152,8 @@ pub async fn get_textures_by_owner(owner_id: String) -> Result<Vec<Texture>, App
     Ok(tex)
 }
 
-/// Eigene Textur-Quota: bereits hochgeladene Anzahl + wirksames Gruppen-Limit
-/// (Maximum ueber alle Gruppen des Nutzers).
+/// Own texture quota: number of uploads already made + effective group limit
+/// (maximum across all of the user's groups).
 #[post("/api/texture/quota", auth: auth::Session)]
 pub async fn get_my_quota() -> Result<TextureQuota, AppError> {
     let user = auth
@@ -189,12 +214,12 @@ pub struct Texture {
     pub skin_name: String,
     pub texture_type: TextureType,
     pub image_data: Blob,
-    /// Benutzer-ID des Uploaders. `None` bei Alt-Texturen ohne Zuordnung.
+    /// User ID of the uploader. `None` for legacy textures without an assignment.
     #[serde(default)]
     pub owner_id: Option<String>,
 }
 
-/// Verbrauchte/belegte Quota eines Nutzers.
+/// Used/occupied quota of a user.
 #[derive(Debug, Deserialize, Clone, Serialize, PartialEq, Default)]
 pub struct TextureQuota {
     pub used: i64,
